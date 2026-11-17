@@ -7,17 +7,77 @@ import { IoLogoGoogle } from "react-icons/io/index";
 import { IoLogoFacebook, IoLogoInstagram } from "react-icons/io5/index";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
+import { openCookieSettings } from "@/lib/consent";
 
 const Footer = () => {
   const { t } = useTranslation();
   return (
-    <div className="flex w-screen flex-col items-center justify-center bg-neutral-900">
+    <div className="flex w-full flex-col items-center justify-center border-t border-white/10 bg-[#10131B] text-white">
       <div className="font-regular flex flex-col gap-12 p-8">
-        <div className="grid max-w-7xl grid-cols-1 justify-items-start gap-8 md:grid-cols-2 lg:grid-cols-4 lg:justify-items-center">
+        <div className="grid max-w-7xl grid-cols-1 justify-items-start gap-8 md:grid-cols-2 lg:grid-cols-5 lg:justify-items-start">
           <div className="flex flex-col gap-4">
             <div className="font-bold">{t("index.nav-unternehmen-title")}</div>
-            <div className="font-regular">
+            <div className="font-regular text-sm leading-relaxed text-neutral-300">
               {t("index.nav-unternehmen-beschreibung")}
+            </div>
+            <div className="flex flex-col gap-1 pt-1 text-sm text-neutral-300">
+              <a
+                href="tel:+496172923232"
+                className="font-medium text-white transition hover:text-[#5AC8FA]"
+              >
+                +49 6172 / 92 32 32
+              </a>
+              <a
+                href="tel:+491607113183"
+                className="text-neutral-300 transition hover:text-[#25D366]"
+              >
+                +49 160 / 711 31 83 (WhatsApp)
+              </a>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <Link
+              href={"/leistungen"}
+              className="font-bold transition hover:text-[#5AC8FA]">
+              {t("nav-leistungen")}
+            </Link>
+            <div className="flex flex-col gap-2 text-sm text-neutral-300">
+              <Link
+                href={"/leistungen/flughafentransfer"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-1")}
+              </Link>
+              <Link
+                href={"/stundenbuchung"}
+                className="transition hover:text-white">
+                {t("nav-hourly")}
+              </Link>
+              <Link
+                href={"/leistungen/bahnhoftransfer"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-2")}
+              </Link>
+              <Link
+                href={"/leistungen/messetransfer"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-3")}
+              </Link>
+              <Link
+                href={"/leistungen/chauffeurservice"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-4")}
+              </Link>
+              <Link
+                href={"/leistungen/expresskurier"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-5")}
+              </Link>
+              <Link
+                href={"/leistungen/limousinenservice"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-6")}
+              </Link>
             </div>
           </div>
 
@@ -25,6 +85,8 @@ const Footer = () => {
             <div className="font-bold">{t("index.nav-about-title")}</div>
             <div className="flex flex-col gap-2">
               <Link href={"/Impressum"}>{t("index.nav-about-us")}</Link>
+              <Link href={"/flughafentransfer"}>{t("nav-regions")}</Link>
+              <Link href={"/leistungen"}>{t("nav-leistungen")}</Link>
               <div>{t("index.nav-about-rezensionen")}</div>
             </div>
           </div>
@@ -107,6 +169,13 @@ const Footer = () => {
               <Link aria-label="Impressum" href="/Impressum">
                 {t("index.impressum")}
               </Link>
+              <div className="hidden h-4 w-0.5 bg-white md:block" />
+              <button
+                type="button"
+                onClick={openCookieSettings}
+                className="cursor-pointer text-white/90 transition hover:text-blue-400">
+                {t("index.cookie")}
+              </button>
             </div>
             <div>{t("index.country")}</div>
           </div>

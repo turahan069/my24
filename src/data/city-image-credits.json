@@ -1,0 +1,155 @@
+{
+  "bad-homburg": {
+    "commonsFile": "File:Bad Homburg Kurhaus Kurparkseite.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Bad_Homburg_Kurhaus_Kurparkseite.JPG",
+    "localPath": "/img/cities/bad-homburg.jpg",
+    "author": "Karsten11",
+    "license": "Public domain",
+    "licenseUrl": "",
+    "downloaded": true
+  },
+  "friedrichsdorf": {
+    "commonsFile": "File:Friedrichsdorf TS Hugenottenstrasse.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Friedrichsdorf_TS_Hugenottenstrasse.jpg",
+    "localPath": "/img/cities/friedrichsdorf.jpg",
+    "author": "MdE",
+    "license": "CC BY-SA 3.0 de",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+    "downloaded": true
+  },
+  "burgholzhausen-friedrichsdorf": {
+    "commonsFile": "File:Friedrichsdorf TS Alt Burgholzhausen.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Friedrichsdorf_TS_Alt_Burgholzhausen.jpg",
+    "localPath": "/img/cities/burgholzhausen-friedrichsdorf.jpg",
+    "author": "MdE",
+    "license": "CC BY-SA 3.0 de",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+    "downloaded": true
+  },
+  "koeppern-friedrichsdorf": {
+    "commonsFile": "File:Friedrichsdorf-Koeppern.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Friedrichsdorf-Koeppern.jpg",
+    "localPath": "/img/cities/koeppern-friedrichsdorf.jpg",
+    "author": "MdE",
+    "license": "CC BY-SA 3.0 de",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+    "downloaded": true
+  },
+  "oberursel": {
+    "commonsFile": "File:Altes-rathaus-2011-oberursel-011.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Altes-rathaus-2011-oberursel-011.jpg",
+    "localPath": "/img/cities/oberursel.jpg",
+    "author": "Dontworry",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "downloaded": true
+  },
+  "neu-anspach": {
+    "commonsFile": "File:Hessenpark 08-01.2.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Hessenpark_08-01.2.JPG",
+    "localPath": "/img/cities/neu-anspach.jpg",
+    "author": "Gerbil",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "downloaded": true
+  },
+  "usingen": {
+    "commonsFile": "File:Usingen Schloss.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Usingen_Schloss.jpg",
+    "localPath": "/img/cities/usingen.jpg",
+    "author": "Volker Thies ( Asdrubal )",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "downloaded": true
+  },
+  "wehrheim": {
+    "commonsFile": "File:Rotes Rathaus Wehrheim.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Rotes_Rathaus_Wehrheim.jpg",
+    "localPath": "/img/cities/wehrheim.jpg",
+    "author": "Karsten Ratzke",
+    "license": "Public domain",
+    "licenseUrl": "",
+    "downloaded": true
+  },
+  "pfaffenwiesbach-wehrheim": {
+    "commonsFile": "File:Pfaffenwiesbach Ansicht.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Pfaffenwiesbach_Ansicht.jpg",
+    "localPath": "/img/cities/pfaffenwiesbach-wehrheim.jpg",
+    "author": "Volker Thies ( Asdrubal )",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "downloaded": true
+  },
+  "rosbach-rodheim": {
+    "commonsFile": "File:Nieder-Rosbach, Wasserburg, Wasserseite.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Nieder-Rosbach,_Wasserburg,_Wasserseite.JPG",
+    "localPath": "/img/cities/rosbach-rodheim.jpg",
+    "author": "Karsten11",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "downloaded": true
+  },
+  "karben": {
+    "commonsFile": "File:Karben Degenfeldschloss01.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Karben_Degenfeldschloss01.jpg",
+    "localPath": "/img/cities/karben.jpg",
+    "author": "Haselburg-müller",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "downloaded": true
+  },
+  "bonames-frankfurt": {
+    "commonsFile": "File:Alter Flugplatz Bonames, Renaturierung.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alter_Flugplatz_Bonames,_Renaturierung.jpg",
+    "localPath": "/img/cities/bonames-frankfurt.jpg",
+    "author": "S. Kasten",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "downloaded": true
+  },
+  "harheim-frankfurt": {
+    "commonsFile": "File:Harheim, Marienkapelle.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Harheim,_Marienkapelle.JPG",
+    "localPath": "/img/cities/harheim-frankfurt.jpg",
+    "author": "Karsten Ratzke",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "downloaded": true
+  },
+  "kalbach-frankfurt": {
+    "commonsFile": "File:Kalbach Rathaus.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Kalbach_Rathaus.JPG",
+    "localPath": "/img/cities/kalbach-frankfurt.jpg",
+    "author": "Karsten11",
+    "license": "Public domain",
+    "licenseUrl": "",
+    "downloaded": true
+  },
+  "riedberg-frankfurt": {
+    "commonsFile": "File:Campus Riedberg, Goethe University Frankfurt.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Campus_Riedberg,_Goethe_University_Frankfurt.jpg",
+    "localPath": "/img/cities/riedberg-frankfurt.jpg",
+    "author": "Sven",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloaded": true
+  },
+  "nieder-eschbach-frankfurt": {
+    "commonsFile": "File:Nieder-Eschbach Kirche Frankfurt.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Nieder-Eschbach_Kirche_Frankfurt.JPG",
+    "localPath": "/img/cities/nieder-eschbach-frankfurt.jpg",
+    "author": "Gaki64",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "downloaded": true
+  },
+  "nieder-erlenbach-frankfurt": {
+    "commonsFile": "File:Alt-Erlenbach, 1, Nieder-Erlenbach, Frankfurt am Main.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Alt-Erlenbach,_1,_Nieder-Erlenbach,_Frankfurt_am_Main.jpg",
+    "localPath": "/img/cities/nieder-erlenbach-frankfurt.jpg",
+    "author": "GeorgDerReisende",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloaded": true
+  }
+}

@@ -1,4 +1,4 @@
-import Snackbar from "@mui/material/Snackbar";
+import { useEffect } from "react";
 
 type ToastProps = {
   isOpen: boolean;
@@ -8,27 +8,27 @@ type ToastProps = {
   text: string;
 };
 
+/**
+ * Lightweight accessible toast notification replacing MUI Snackbar to keep the
+ * client bundle small without sacrificing auto-dismiss or screen-reader notices.
+ */
 const Toast = ({ isOpen, setIsOpen, severity, title, text }: ToastProps) => {
-  const handleClose = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = window.setTimeout(() => setIsOpen(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [isOpen, setIsOpen]);
 
-    setIsOpen(false);
-  };
+  if (!isOpen) return null;
 
   return (
-    <Snackbar
-      open={isOpen}
-      autoHideDuration={5000}
-      onClose={handleClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}>
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-5 left-5 z-50 max-w-sm">
       <div
-        className={`flex flex-row gap-4 rounded-lg p-4 ${
-          severity === "success" ? "bg-[#6fcf97]" : "bg-[#eb5757]"
+        className={`flex flex-row gap-4 rounded-xl p-4 text-neutral-900 shadow-2xl ${
+          severity === "success" ? "bg-[#6fcf97]" : "bg-[#eb5757] text-white"
         }`}>
         <div className="flex self-center">
           {severity === "error" ? (
@@ -61,16 +61,20 @@ const Toast = ({ isOpen, setIsOpen, severity, title, text }: ToastProps) => {
             </svg>
           )}
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-1 flex-col text-sm">
           <div className="font-bold">{title}</div>
           <div>{text}</div>
         </div>
-        <button onClick={() => setIsOpen(false)} className="self-start">
+        <button
+          type="button"
+          aria-label="Close notification"
+          onClick={() => setIsOpen(false)}
+          className="self-start rounded-full p-0.5 hover:bg-black/10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth={1}
+            strokeWidth={1.75}
             stroke="currentColor"
             className="h-5 w-5">
             <path
@@ -81,7 +85,7 @@ const Toast = ({ isOpen, setIsOpen, severity, title, text }: ToastProps) => {
           </svg>
         </button>
       </div>
-    </Snackbar>
+    </div>
   );
 };
 

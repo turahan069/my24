@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { useRouter } from "next/router";
 import Footer from "@/components/footer/footer";
 import Navbar from "@/components/navbar";
 import BuchenSection from "@/components/sections/buchen-section";
@@ -5,90 +7,164 @@ import FuhrparkSection from "@/components/sections/fuhrpark-section";
 import HomeSection from "@/components/sections/home-section";
 import LeistungenSection from "@/components/sections/leistungen-section";
 import PreiseSection from "@/components/sections/preise-section";
-import Head from "next/head";
+import SeoHead, { SITE_URL } from "@/components/seo/seo-head";
+import { CITIES, type CityAreaCategory } from "@/data/cities";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { GetServerSideProps } from "next/types";
+import { GetStaticProps } from "next/types";
 import PhoneButton from "@/components/phone-button";
-import TagManager from "react-gtm-module";
-import React, { useEffect } from "react";
+import { WhatsAppBanner } from "@/components/whatsapp-banner";
+
+const REGION_GROUPS: {
+  id: CityAreaCategory;
+  titleDe: string;
+  titleEn: string;
+}[] = [
+  { id: "hochtaunus", titleDe: "Hochtaunuskreis", titleEn: "Hochtaunus District" },
+  { id: "wetterau", titleDe: "Wetteraukreis", titleEn: "Wetterau District" },
+  { id: "frankfurt_nord", titleDe: "Frankfurt am Main (Nord)", titleEn: "Northern Frankfurt" },
+];
 
 export default function Home() {
-  useEffect(() => {
-    TagManager.initialize({ gtmId: 'GTM-K2RFP7QN' });
-  }, []);
+  const router = useRouter();
+  const isEn = router.locale === "en";
+
+  const seoTitle = isEn
+    ? "Frankfurt Airport Transfer, Taxi & Shuttle | Fixed Fares from €50"
+    : "Flughafentransfer Frankfurt, Taxi & Shuttle | Ab 50 € Festpreis";
+
+  const seoDescription = isEn
+    ? "24/7 Frankfurt Airport Transfer (FRA), Taxi & private Airport Shuttle from €50 fixed fare in Bad Homburg, Friedrichsdorf, Oberursel, Usingen, Karben & North Frankfurt."
+    : "24/7 Flughafentransfer Frankfurt (FRA), Taxi & privates Airport-Shuttle ab 50 € Festpreis – direkt ab Bad Homburg, Friedrichsdorf, Oberursel, Usingen, Karben & Frankfurt-Nord.";
+
+  const allCityNames = CITIES.map((c) => c.shortName).join(", ");
+
+  const homeJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TaxiService",
+    name: "MyAirportTransfer24 – Flughafentransfer, Taxi- & Limousinenservice",
+    alternateName: [
+      "Flughafentransfer Frankfurt (FRA)",
+      "Airport Shuttle Frankfurt & Hochtaunus",
+      "Flughafen-Taxi Bad Homburg & Friedrichsdorf",
+    ],
+    url: SITE_URL,
+    telephone: "+49 6172 923232",
+    email: "info@MyAirportTransfer24.de",
+    priceRange: "€€",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Max-Planck-Straße 16",
+      addressLocality: "Friedrichsdorf",
+      postalCode: "61381",
+      addressCountry: "DE",
+    },
+    areaServed: CITIES.map((city) => ({
+      "@type": "Place",
+      name: city.displayName,
+    })),
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: isEn
+        ? "Airport Transfer, Taxi & Shuttle Services Frankfurt"
+        : "Flughafentransfer, Taxi & Airport-Shuttle Frankfurt",
+      itemListElement: CITIES.map((city) => ({
+        "@type": "Offer",
+        priceCurrency: "EUR",
+        price: city.prices.flughafen,
+        itemOffered: {
+          "@type": "Service",
+          name: isEn
+            ? `Airport Transfer, Taxi & Shuttle ${city.displayName} – Frankfurt Airport (FRA)`
+            : `Flughafentransfer, Taxi & Shuttle ${city.displayName} – Flughafen Frankfurt (FRA)`,
+        },
+      })),
+    },
+  };
 
   return (
     <>
-      <Head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-K2RFP7QN');`,
-          }}
-        />
-        
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            function gtag_report_conversion(url) {
-              var callback = function () {
-                if (typeof(url) != 'undefined') {
-                  window.location = url;
-                }
-              };
-              gtag('event', 'conversion', {
-                'send_to': 'TAG_ID/CONVERSION_LABEL',
-                'value': 1.0,
-                'currency': 'USD',
-                'event_callback': callback
-              });
-              return false;
-            }
-            `,
-          }}
-        />
-        <title>MyAirportTransfer24 - Flughafentransfer Bad Homburg</title>
-
-        <meta property="og:locale" content="de_DE" />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:title"
-          content="Flughafentransfer Frankfurt - Airporttransfer zum Festpreis!"
-        />
-        <meta
-          name="description"
-          content="Flughafentransfer Frankfurt: Flughafentransfer Frankfurt - Airporttransfer zum Festpreis vom Flughafen Frankfurt am Main (FRA) zum Festpreis in die gewünschte Region."
-        />
-        <meta
-          name="keywords"
-          content="airporttransfer frankfurt, frankfurt airporttransfer, flughafentransfer frankfurt, frankfurt flughafentransfer, bad homburg, bonames (frankfurt), burgholzhausen, friedrichsdorf,harheim (frankfurt),kalbach (frankfurt), köppern,neu-anspach,nieder-erlenbach (frankfurt),nieder-eschbach (frankfurt),oberursel,riedberg (frankfurt),rosbach / rodheim v. d. höhe,usingen,rosbach / rodheim v. d. höhe, wehrheim,karben, flughafen frankfurt, frankfurt airport, cheap airporttransfer, best airporttransfer, e-klasse, v-klasse, kombi, gepäck, personen, günstig, billig, schnell, bester flughafentransfer, bahnhoftransfer, messetransfer,festpreise, fixpreis,einfach,transfer frankfurt, frankfurt airport transfer, bestseller, 5 sterne, 5 stars, bargeld, paypal, ec-karte, modern, sicher, frankfurt flughafen, partner frankfurt flughafen, google, instagram, facebook,günstige preise, telefon, deutsch, english, buchen, anfragen, leistungen, großer fuhrpark,business"
-        />
-        <meta
-          property="og:description"
-          content="Flughafentransfer Frankfurt: Flughafentransfer Frankfurt - Airporttransfer zum Festpreis vom Flughafen Frankfurt am Main (FRA) zum Festpreis in die gewünschte Region."
-        />
-        <meta property="og:url" content="https://myairporttransfer24.de/" />
-        <meta property="og:site_name" content="Flughafentransfer Frankfurt" />
-        <meta
-          property="article:modified_time"
-          content="2022-09-18T05:57:54+00:00"
-        />
-
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-K2RFP7QN"
-            height="0"
-            width="0"
-            style={{ display: 'none', visibility: 'hidden' }} 
-          ></iframe>
-        </noscript>
-
-      </Head>
-      <main className="flex flex-col">
+      <SeoHead
+        title={seoTitle}
+        description={seoDescription}
+        path="/"
+        jsonLd={homeJsonLd}
+      />
+      <main className="flex flex-col bg-[#0B0D12] text-white">
         <Navbar />
-        <div className="pt-32"></div>
+        <div className="pt-16 lg:pt-[76px]" />
         <HomeSection />
+        <WhatsAppBanner theme="dark" />
         <BuchenSection />
         <PreiseSection />
+
+        {/* Regional Airport Transfer, Taxi & Shuttle Directory (17 Cities) */}
+        <section className="w-full border-b border-white/10 bg-[#0B0D12] px-4 py-14 text-white sm:px-6 lg:px-8 lg:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="max-w-3xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5AC8FA]">
+                  {isEn
+                    ? "REGIONAL AIRPORT TRANSFER · TAXI · SHUTTLE"
+                    : "FLUGHAFENTRANSFER · TAXI · SHUTTLE VOR ORT"}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                  {isEn
+                    ? `Direct Airport Transfer & Shuttle across ${CITIES.length} Towns`
+                    : `Flughafentransfer, Taxi & Shuttle für alle ${CITIES.length} Einsatzgebiete`}
+                </h2>
+                <p className="mt-2.5 text-sm leading-relaxed text-neutral-300 sm:text-base">
+                  {isEn
+                    ? `Whether booking an airport taxi, fixed-fare chauffeur, or private Frankfurt Airport shuttle—we pick you up directly in ${allCityNames} and drive nonstop to FRA Terminal 1 & 3.`
+                    : `Ob privates Flughafen-Taxi, direkter Flughafentransfer oder komfortabler Airport-Shuttle: Wir holen Sie pünktlich in ${allCityNames} direkt an der Haustür ab und bringen Sie zum Festpreis an Terminal 1 & 3 in Frankfurt (FRA).`}
+                </p>
+              </div>
+              <Link
+                href="/flughafentransfer"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#0071E3] px-5 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98] sm:text-sm"
+              >
+                {isEn ? "All 17 Service Areas →" : "Alle Einsatzgebiete →"}
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+              {REGION_GROUPS.map((group) => {
+                const regionCities = CITIES.filter(
+                  (c) => c.category === group.id
+                );
+                return (
+                  <div
+                    key={group.id}
+                    className="flex flex-col rounded-2xl border border-white/10 bg-[#151924] p-5"
+                  >
+                    <h3 className="border-b border-white/10 pb-3 text-sm font-bold uppercase tracking-wider text-[#5AC8FA]">
+                      {isEn ? group.titleEn : group.titleDe}
+                    </h3>
+                    <ul className="mt-3 divide-y divide-white/5">
+                      {regionCities.map((city) => (
+                        <li key={city.slug}>
+                          <Link
+                            href={`/flughafentransfer/${city.slug}`}
+                            className="group flex items-center justify-between gap-2 py-2 text-sm transition hover:text-[#5AC8FA]"
+                          >
+                            <span className="text-neutral-200 transition group-hover:text-white">
+                              {isEn
+                                ? `Airport Transfer & Taxi ${city.shortName}`
+                                : `Flughafentransfer & Taxi ${city.shortName}`}
+                            </span>
+                            <span className="shrink-0 font-semibold tabular-nums text-[#5AC8FA]">
+                              {city.prices.flughafen} €
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
         <LeistungenSection />
         <FuhrparkSection />
         <Footer />
@@ -98,7 +174,7 @@ export default function Home() {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
     props: {
       ...(await serverSideTranslations(locale ?? "de", ["common"])),

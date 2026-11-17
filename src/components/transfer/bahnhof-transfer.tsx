@@ -5,20 +5,30 @@ import type {
   FahrzeugType,
   PersonalInformationType,
 } from "@/types";
-import { Listbox, Dialog, Switch, Transition } from "@headlessui/react";
+import { Listbox, Switch } from "@headlessui/react";
 import DateTimePicker from "@/components/date-time-picker";
-import { motion, transform } from "framer-motion";
+import { motion } from "framer-motion";
 import moment from "moment";
 import { Moment } from "moment";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BiMapPin } from "react-icons/bi";
 import { BsChevronDown, BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import { IoLocationOutline, IoCloseSharp, IoCheckmark } from "react-icons/io5";
+import { IoLocationOutline, IoCheckmark } from "react-icons/io5";
 import { Preise } from "@/data";
 import { useTranslation } from "next-i18next";
-import NumberInput from "../number-input";
+import { AddressModal } from "../address-modal";
+import { AddressPromptButton } from "../address-prompt-button";
+import LuggageSection, { type LuggageMode } from "../luggage-section";
 import Toast from "../toast";
+import ReturnTripToggle from "../return-trip-toggle";
 import submitForm from "@/utils";
+import { trackBookingSubmit, trackWizardStep } from "@/lib/analytics";
+
+const TRAIN_STATIONS = [
+  "Frankfurter Hauptbahnhof",
+  "Frankfurter Fernbahnhof",
+  "Frankfurter Südbahnhof",
+];
 
 const BahnhofTransfer = ({
   activeStep,
@@ -35,21 +45,21 @@ const BahnhofTransfer = ({
 }) => {
   const [transportInformation, setTransportInformation] = useState<{
     abholort:
-      | AbholortType
-      | "Frankfurter Hauptbahnhof"
-      | "Frankfurter Fernbahnhof"
-      | "Frankfurter Südbahnhof"
-      | null;
+    | AbholortType
+    | "Frankfurter Hauptbahnhof"
+    | "Frankfurter Fernbahnhof"
+    | "Frankfurter Südbahnhof"
+    | null;
     abholortAdresse: {
       strasse: string;
       hausnummer: string;
     };
     zielort:
-      | AbholortType
-      | "Frankfurter Hauptbahnhof"
-      | "Frankfurter Fernbahnhof"
-      | "Frankfurter Südbahnhof"
-      | null;
+    | AbholortType
+    | "Frankfurter Hauptbahnhof"
+    | "Frankfurter Fernbahnhof"
+    | "Frankfurter Südbahnhof"
+    | null;
     zielortAdresse: {
       strasse: string;
       hausnummer: string;
@@ -57,17 +67,17 @@ const BahnhofTransfer = ({
     hinreiseDatum: Moment | null;
     rueckreiseDatum: Moment | null;
     abholortRueckreise:
-      | AbholortType
-      | "Frankfurter Hauptbahnhof"
-      | "Frankfurter Fernbahnhof"
-      | "Frankfurter Südbahnhof"
-      | null;
+    | AbholortType
+    | "Frankfurter Hauptbahnhof"
+    | "Frankfurter Fernbahnhof"
+    | "Frankfurter Südbahnhof"
+    | null;
     zielortRueckreise:
-      | AbholortType
-      | "Frankfurter Hauptbahnhof"
-      | "Frankfurter Fernbahnhof"
-      | "Frankfurter Südbahnhof"
-      | null;
+    | AbholortType
+    | "Frankfurter Hauptbahnhof"
+    | "Frankfurter Fernbahnhof"
+    | "Frankfurter Südbahnhof"
+    | null;
     abholortRueckreiseAdresse: {
       strasse: string;
       hausnummer: string;
@@ -121,6 +131,16 @@ const BahnhofTransfer = ({
 
   const [abgeschickt, setAbgeschickt] = useState(false);
 
+  const [luggageMode, setLuggageMode] = useState<LuggageMode>("hand");
+
+  function handleLuggageModeChange(mode: LuggageMode) {
+    setLuggageMode(mode);
+    setTransportInformation((prev) => ({
+      ...prev,
+      koffer: mode === "hand" ? 0 : Math.max(1, prev.koffer),
+    }));
+  }
+
   function formatDate(date: Moment | null) {
     if (!date) return null;
     return `${date.format("DD.MM.YYYY, HH:mm")} Uhr`;
@@ -157,6 +177,7 @@ const BahnhofTransfer = ({
       fahrzeug: "Business Limousine",
       rueckReise: false,
     });
+    setLuggageMode("hand");
     setAbgeschickt(false);
   }
 
@@ -276,7 +297,7 @@ const BahnhofTransfer = ({
       ) {
         if (
           transportInformation.abholortRueckreise ===
-            "Frankfurter Fernbahnhof" ||
+          "Frankfurter Fernbahnhof" ||
           transportInformation.zielortRueckreise === "Frankfurter Fernbahnhof"
         ) {
           price +=
@@ -289,7 +310,7 @@ const BahnhofTransfer = ({
             )?.Flughafen || 0;
         } else if (
           transportInformation.abholortRueckreise ===
-            "Frankfurter Hauptbahnhof" ||
+          "Frankfurter Hauptbahnhof" ||
           transportInformation.zielortRueckreise === "Frankfurter Hauptbahnhof"
         ) {
           price +=
@@ -302,7 +323,7 @@ const BahnhofTransfer = ({
             )?.Hauptbahnhof || 0;
         } else if (
           transportInformation.abholortRueckreise ===
-            "Frankfurter Südbahnhof" ||
+          "Frankfurter Südbahnhof" ||
           transportInformation.zielortRueckreise === "Frankfurter Südbahnhof"
         ) {
           price +=
@@ -321,7 +342,7 @@ const BahnhofTransfer = ({
       price += (26 * 2);
     } else if (transportInformation.fahrzeug === "Business Kombi" && transportInformation.rueckReise) {
       price += (2 * 2);
-    } else if (transportInformation.fahrzeug === "Großraum Limousine" ) {
+    } else if (transportInformation.fahrzeug === "Großraum Limousine") {
       price += 26;
     } else if (transportInformation.fahrzeug === "Business Kombi") {
       price += 2;
@@ -591,8 +612,8 @@ const BahnhofTransfer = ({
           transportInformation.fahrzeug !== null &&
           (transportInformation.rueckReise
             ? transportInformation.rueckreiseDatum !== null &&
-              transportInformation.abholortRueckreise !== null &&
-              transportInformation.zielortRueckreise !== null
+            transportInformation.abholortRueckreise !== null &&
+            transportInformation.zielortRueckreise !== null
             : true)
         );
       case 2:
@@ -630,6 +651,25 @@ const BahnhofTransfer = ({
     }
   }
 
+  function toggleRueckReise(value: boolean) {
+    // Beim Aktivieren die Rückfahrt automatisch mit der umgekehrten Route vorbelegen
+    setTransportInformation((prev) => {
+      if (!value) return { ...prev, rueckReise: false };
+      return {
+        ...prev,
+        rueckReise: true,
+        abholortRueckreise: prev.abholortRueckreise ?? prev.zielort,
+        zielortRueckreise: prev.zielortRueckreise ?? prev.abholort,
+        abholortRueckreiseAdresse: prev.abholortRueckreise
+          ? prev.abholortRueckreiseAdresse
+          : { ...prev.zielortAdresse },
+        zielortRueckreiseAdresse: prev.zielortRueckreise
+          ? prev.zielortRueckreiseAdresse
+          : { ...prev.abholortAdresse },
+      };
+    });
+  }
+
   if (activeStep === 1)
     return (
       <div className="flex flex-col gap-8">
@@ -645,9 +685,8 @@ const BahnhofTransfer = ({
               }}>
               <Listbox.Button className={"w-full"}>
                 <div
-                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                    transportInformation.art === null ? "border-yellow-500" : ""
-                  }`}>
+                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.art === null ? "border-yellow-500" : ""
+                    }`}>
                   <div className="group flex flex-1 flex-col">
                     <motion.span
                       layout="position"
@@ -690,6 +729,11 @@ const BahnhofTransfer = ({
               </Listbox.Options>
             </Listbox>
           </div>
+          <ReturnTripToggle
+            checked={transportInformation.rueckReise}
+            onChange={toggleRueckReise}
+            variant="train"
+          />
           <div className="relative w-full">
             <Listbox
               value={transportInformation.abholort}
@@ -698,11 +742,10 @@ const BahnhofTransfer = ({
               }}>
               <Listbox.Button className={"w-full"}>
                 <div
-                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                    transportInformation.abholort === null
-                      ? "border-yellow-500"
-                      : ""
-                  }`}>
+                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.abholort === null
+                    ? "border-yellow-500"
+                    : ""
+                    }`}>
                   <div className="p-2 text-xl">
                     <IoLocationOutline />
                   </div>
@@ -743,124 +786,41 @@ const BahnhofTransfer = ({
                 </motion.div>
               </Listbox.Options>
             </Listbox>
-            <Transition appear show={isAbholortModalOpen} as={Fragment}>
-              <Dialog
-                open={isAbholortModalOpen}
-                onClose={() => handleAddressModalClose(false, false)}>
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0">
-                  <div
-                    className="fixed inset-0 z-20 bg-black/70 transition-all"
-                    aria-hidden="true"
-                  />
-                </Transition.Child>
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95">
-                  <Dialog.Panel
-                    className={
-                      "fixed inset-0 z-30 flex items-center justify-center p-4"
-                    }>
-                    <div className="flex flex-col gap-8 rounded-lg bg-neutral-900 p-8">
-                      <div className="flex flex-row justify-between">
-                        <Dialog.Title className="text-2xl">
-                          {t("index.wizard-address")}
-                        </Dialog.Title>
-                        <button
-                          onClick={() => handleAddressModalClose(false, false)}
-                          className="rounded-full p-2 text-2xl transition-all hover:bg-white/10">
-                          <IoCloseSharp />
-                        </button>
-                      </div>
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                          <label htmlFor="strasse">
-                            {t("index.wizard-street")}
-                          </label>
-                          <input
-                            value={transportInformation.abholortAdresse.strasse}
-                            onChange={(e) => {
-                              setTransportInformation({
-                                ...transportInformation,
-                                abholortAdresse: {
-                                  ...transportInformation.abholortAdresse,
-                                  strasse: e.target.value,
-                                },
-                              });
-                            }}
-                            type="text"
-                            id="strasse"
-                            className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                              transportInformation.abholortAdresse.strasse ===
-                              ""
-                                ? "ring-yellow-500"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-2">
-                            <label htmlFor="hausnummer">
-                              {t("index.wizard-house-number")}
-                            </label>
-                            <input
-                              value={
-                                transportInformation.abholortAdresse.hausnummer
-                              }
-                              onChange={(e) => {
-                                setTransportInformation({
-                                  ...transportInformation,
-                                  abholortAdresse: {
-                                    ...transportInformation.abholortAdresse,
-                                    hausnummer: e.target.value,
-                                  },
-                                });
-                              }}
-                              type="text"
-                              id="hausnummer"
-                              className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                                transportInformation.abholortAdresse
-                                  .hausnummer === ""
-                                  ? "ring-yellow-500"
-                                  : ""
-                              }`}
-                            />
-                          </div>
-
-                          <div className="col-span-2 flex flex-col gap-2 md:col-span-1">
-                            <label htmlFor="ort">{t("index.wizard-ort")}</label>
-                            <input
-                              value={transportInformation.abholort ?? ""}
-                              disabled={true}
-                              type="text"
-                              id="ort"
-                              className="rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        disabled={!isModalDataValid(false, false)}
-                        className="flex items-center justify-center rounded-xl bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
-                        onClick={() => closeAddressModal(false, false)}>
-                        {t("index.wizard-save")}
-                      </button>
-                    </div>
-                  </Dialog.Panel>
-                </Transition.Child>
-              </Dialog>
-            </Transition>
+            <AddressModal
+              isOpen={isAbholortModalOpen}
+              onClose={() => handleAddressModalClose(false, false)}
+              onSave={() => closeAddressModal(false, false)}
+              city={transportInformation.abholort ?? ""}
+              strasse={transportInformation.abholortAdresse.strasse}
+              hausnummer={transportInformation.abholortAdresse.hausnummer}
+              onStrasseChange={(val) =>
+                setTransportInformation({
+                  ...transportInformation,
+                  abholortAdresse: {
+                    ...transportInformation.abholortAdresse,
+                    strasse: val,
+                  },
+                })
+              }
+              onHausnummerChange={(val) =>
+                setTransportInformation({
+                  ...transportInformation,
+                  abholortAdresse: {
+                    ...transportInformation.abholortAdresse,
+                    hausnummer: val,
+                  },
+                })
+              }
+              isValid={isModalDataValid(false, false)}
+            />
+            {transportInformation.abholort &&
+              !TRAIN_STATIONS.includes(transportInformation.abholort) ? (
+              <AddressPromptButton
+                strasse={transportInformation.abholortAdresse.strasse}
+                hausnummer={transportInformation.abholortAdresse.hausnummer}
+                onClick={() => setIsAbholortModalOpen(true)}
+              />
+            ) : null}
           </div>
           <div className="relative w-full">
             <Listbox
@@ -870,11 +830,10 @@ const BahnhofTransfer = ({
               }}>
               <Listbox.Button className={"w-full"}>
                 <div
-                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                    transportInformation.zielort === null
-                      ? "border-yellow-500"
-                      : ""
-                  }`}>
+                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.zielort === null
+                    ? "border-yellow-500"
+                    : ""
+                    }`}>
                   <div className="p-2 text-xl">
                     <BiMapPin />
                   </div>
@@ -915,139 +874,56 @@ const BahnhofTransfer = ({
                 </motion.div>
               </Listbox.Options>
             </Listbox>
-            <Transition appear show={isZielortModalOpen} as={Fragment}>
-              <Dialog
-                open={isZielortModalOpen}
-                onClose={() => handleAddressModalClose(true, false)}>
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0">
-                  <div
-                    className="fixed inset-0 z-20 bg-black/70 transition-all"
-                    aria-hidden="true"
-                  />
-                </Transition.Child>
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95">
-                  <Dialog.Panel
-                    className={
-                      "fixed inset-0 z-30 flex items-center justify-center p-4"
-                    }>
-                    <div className="flex flex-col gap-8 rounded-lg bg-neutral-900 p-8">
-                      <div className="flex flex-row justify-between">
-                        <Dialog.Title className="text-2xl">
-                          {t("index.wizard-address")}
-                        </Dialog.Title>
-                        <button
-                          onClick={() => handleAddressModalClose(true, false)}
-                          className="rounded-full p-2 text-2xl transition-all hover:bg-white/10">
-                          <IoCloseSharp />
-                        </button>
-                      </div>
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                          <label htmlFor="strasse">
-                            {t("index.wizard-street")}
-                          </label>
-                          <input
-                            value={transportInformation.zielortAdresse.strasse}
-                            onChange={(e) => {
-                              setTransportInformation({
-                                ...transportInformation,
-                                zielortAdresse: {
-                                  ...transportInformation.zielortAdresse,
-                                  strasse: e.target.value,
-                                },
-                              });
-                            }}
-                            type="text"
-                            id="strasse"
-                            className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                              transportInformation.zielortAdresse.strasse === ""
-                                ? "ring-yellow-500"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-2">
-                            <label htmlFor="hausnummer">
-                              {t("index.wizard-house-number")}
-                            </label>
-                            <input
-                              value={
-                                transportInformation.zielortAdresse.hausnummer
-                              }
-                              onChange={(e) => {
-                                setTransportInformation({
-                                  ...transportInformation,
-                                  zielortAdresse: {
-                                    ...transportInformation.zielortAdresse,
-                                    hausnummer: e.target.value,
-                                  },
-                                });
-                              }}
-                              type="text"
-                              id="hausnummer"
-                              className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                                transportInformation.zielortAdresse
-                                  .hausnummer === ""
-                                  ? "ring-yellow-500"
-                                  : ""
-                              }`}
-                            />
-                          </div>
-
-                          <div className="col-span-2 flex flex-col gap-2 md:col-span-1">
-                            <label htmlFor="ort">{t("index.wizard-ort")}</label>
-                            <input
-                              value={transportInformation.zielort ?? ""}
-                              disabled={true}
-                              type="text"
-                              id="ort"
-                              className="rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        disabled={!isModalDataValid(true, false)}
-                        className="flex items-center justify-center rounded-xl bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
-                        onClick={() => closeAddressModal(true, false)}>
-                        {t("index.wizard-save")}
-                      </button>
-                    </div>
-                  </Dialog.Panel>
-                </Transition.Child>
-              </Dialog>
-            </Transition>
+            <AddressModal
+              isOpen={isZielortModalOpen}
+              onClose={() => handleAddressModalClose(true, false)}
+              onSave={() => closeAddressModal(true, false)}
+              city={transportInformation.zielort ?? ""}
+              strasse={transportInformation.zielortAdresse.strasse}
+              hausnummer={transportInformation.zielortAdresse.hausnummer}
+              onStrasseChange={(val) =>
+                setTransportInformation({
+                  ...transportInformation,
+                  zielortAdresse: {
+                    ...transportInformation.zielortAdresse,
+                    strasse: val,
+                  },
+                })
+              }
+              onHausnummerChange={(val) =>
+                setTransportInformation({
+                  ...transportInformation,
+                  zielortAdresse: {
+                    ...transportInformation.zielortAdresse,
+                    hausnummer: val,
+                  },
+                })
+              }
+              isValid={isModalDataValid(true, false)}
+            />
+            {transportInformation.zielort &&
+              !TRAIN_STATIONS.includes(transportInformation.zielort) ? (
+              <AddressPromptButton
+                strasse={transportInformation.zielortAdresse.strasse}
+                hausnummer={transportInformation.zielortAdresse.hausnummer}
+                onClick={() => setIsZielortModalOpen(true)}
+              />
+            ) : null}
           </div>
           {transportInformation.rueckReise ? (
             <>
               <div className="relative w-full">
                 <Listbox
-                  value={transportInformation.abholort}
+                  value={transportInformation.abholortRueckreise}
                   onChange={(e) => {
                     openAddressModal(e, false, true);
                   }}>
                   <Listbox.Button className={"w-full"}>
                     <div
-                      className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                        transportInformation.abholortRueckreise === null
-                          ? "border-yellow-500"
-                          : ""
-                      }`}>
+                      className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.abholortRueckreise === null
+                        ? "border-yellow-500"
+                        : ""
+                        }`}>
                       <div className="p-2 text-xl">
                         <IoLocationOutline />
                       </div>
@@ -1092,139 +968,49 @@ const BahnhofTransfer = ({
                     </motion.div>
                   </Listbox.Options>
                 </Listbox>
-                <Transition
-                  appear
-                  show={isAbholortRueckreiseModalOpen}
-                  as={Fragment}>
-                  <Dialog
-                    open={isAbholortRueckreiseModalOpen}
-                    onClose={() => handleAddressModalClose(false, true)}>
-                    <Transition.Child
-                      as={Fragment}
-                      enter="ease-out duration-300"
-                      enterFrom="opacity-0"
-                      enterTo="opacity-100"
-                      leave="ease-in duration-200"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0">
-                      <div
-                        className="fixed inset-0 z-20 bg-black/70 transition-all"
-                        aria-hidden="true"
-                      />
-                    </Transition.Child>
-                    <Transition.Child
-                      as={Fragment}
-                      enter="ease-out duration-300"
-                      enterFrom="opacity-0 scale-95"
-                      enterTo="opacity-100 scale-100"
-                      leave="ease-in duration-200"
-                      leaveFrom="opacity-100 scale-100"
-                      leaveTo="opacity-0 scale-95">
-                      <Dialog.Panel
-                        className={
-                          "fixed inset-0 z-30 flex items-center justify-center p-4"
-                        }>
-                        <div className="flex flex-col gap-8 rounded-lg bg-neutral-900 p-8">
-                          <div className="flex flex-row justify-between">
-                            <Dialog.Title className="text-2xl">
-                              {t("index.wizard-address")}
-                            </Dialog.Title>
-                            <button
-                              onClick={() =>
-                                handleAddressModalClose(false, true)
-                              }
-                              className="rounded-full p-2 text-2xl transition-all hover:bg-white/10">
-                              <IoCloseSharp />
-                            </button>
-                          </div>
-                          <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-2">
-                              <label htmlFor="strasse">
-                                {t("index.wizard-street")}
-                              </label>
-                              <input
-                                value={
-                                  transportInformation.abholortRueckreiseAdresse
-                                    .strasse
-                                }
-                                onChange={(e) => {
-                                  setTransportInformation({
-                                    ...transportInformation,
-                                    abholortRueckreiseAdresse: {
-                                      ...transportInformation.abholortRueckreiseAdresse,
-                                      strasse: e.target.value,
-                                    },
-                                  });
-                                }}
-                                type="text"
-                                id="strasse"
-                                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                                  transportInformation.abholortRueckreiseAdresse
-                                    .strasse === ""
-                                    ? "ring-yellow-500"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="flex flex-col gap-2">
-                                <label htmlFor="hausnummer">
-                                  {t("index.wizard-house-number")}
-                                </label>
-                                <input
-                                  value={
-                                    transportInformation
-                                      .abholortRueckreiseAdresse.hausnummer
-                                  }
-                                  onChange={(e) => {
-                                    setTransportInformation({
-                                      ...transportInformation,
-                                      abholortRueckreiseAdresse: {
-                                        ...transportInformation.abholortRueckreiseAdresse,
-                                        hausnummer: e.target.value,
-                                      },
-                                    });
-                                  }}
-                                  type="text"
-                                  id="hausnummer"
-                                  className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                                    transportInformation
-                                      .abholortRueckreiseAdresse.hausnummer ===
-                                    ""
-                                      ? "ring-yellow-500"
-                                      : ""
-                                  }`}
-                                />
-                              </div>
-
-                              <div className="col-span-2 flex flex-col gap-2 md:col-span-1">
-                                <label htmlFor="ort">
-                                  {t("index.wizard-ort")}
-                                </label>
-                                <input
-                                  value={
-                                    transportInformation.abholortRueckreise ??
-                                    ""
-                                  }
-                                  disabled={true}
-                                  type="text"
-                                  id="ort"
-                                  className="rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            disabled={!isModalDataValid(false, true)}
-                            className="flex items-center justify-center rounded-xl bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
-                            onClick={() => closeAddressModal(false, true)}>
-                            {t("index.wizard-save")}
-                          </button>
-                        </div>
-                      </Dialog.Panel>
-                    </Transition.Child>
-                  </Dialog>
-                </Transition>
+                <AddressModal
+                  isOpen={isAbholortRueckreiseModalOpen}
+                  onClose={() => handleAddressModalClose(false, true)}
+                  onSave={() => closeAddressModal(false, true)}
+                  city={transportInformation.abholortRueckreise ?? ""}
+                  strasse={transportInformation.abholortRueckreiseAdresse.strasse}
+                  hausnummer={
+                    transportInformation.abholortRueckreiseAdresse.hausnummer
+                  }
+                  onStrasseChange={(val) =>
+                    setTransportInformation({
+                      ...transportInformation,
+                      abholortRueckreiseAdresse: {
+                        ...transportInformation.abholortRueckreiseAdresse,
+                        strasse: val,
+                      },
+                    })
+                  }
+                  onHausnummerChange={(val) =>
+                    setTransportInformation({
+                      ...transportInformation,
+                      abholortRueckreiseAdresse: {
+                        ...transportInformation.abholortRueckreiseAdresse,
+                        hausnummer: val,
+                      },
+                    })
+                  }
+                  isValid={isModalDataValid(false, true)}
+                />
+                {transportInformation.abholortRueckreise &&
+                  !TRAIN_STATIONS.includes(
+                    transportInformation.abholortRueckreise
+                  ) ? (
+                  <AddressPromptButton
+                    strasse={
+                      transportInformation.abholortRueckreiseAdresse.strasse
+                    }
+                    hausnummer={
+                      transportInformation.abholortRueckreiseAdresse.hausnummer
+                    }
+                    onClick={() => setIsAbholortRueckreiseModalOpen(true)}
+                  />
+                ) : null}
               </div>
               <div className="relative w-full">
                 <Listbox
@@ -1234,11 +1020,10 @@ const BahnhofTransfer = ({
                   }}>
                   <Listbox.Button className={"w-full"}>
                     <div
-                      className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                        transportInformation.zielortRueckreise === null
-                          ? "border-yellow-500"
-                          : ""
-                      }`}>
+                      className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.zielortRueckreise === null
+                        ? "border-yellow-500"
+                        : ""
+                        }`}>
                       <div className="p-2 text-xl">
                         <BiMapPin />
                       </div>
@@ -1283,253 +1068,189 @@ const BahnhofTransfer = ({
                     </motion.div>
                   </Listbox.Options>
                 </Listbox>
-                <Transition
-                  appear
-                  show={isZielortRueckreiseModalOpen}
-                  as={Fragment}>
-                  <Dialog
-                    open={isZielortRueckreiseModalOpen}
-                    onClose={() => handleAddressModalClose(true, true)}>
-                    <Transition.Child
-                      as={Fragment}
-                      enter="ease-out duration-300"
-                      enterFrom="opacity-0"
-                      enterTo="opacity-100"
-                      leave="ease-in duration-200"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0">
-                      <div
-                        className="fixed inset-0 z-20 bg-black/70 transition-all"
-                        aria-hidden="true"
-                      />
-                    </Transition.Child>
-                    <Transition.Child
-                      as={Fragment}
-                      enter="ease-out duration-300"
-                      enterFrom="opacity-0 scale-95"
-                      enterTo="opacity-100 scale-100"
-                      leave="ease-in duration-200"
-                      leaveFrom="opacity-100 scale-100"
-                      leaveTo="opacity-0 scale-95">
-                      <Dialog.Panel
-                        className={
-                          "fixed inset-0 z-30 flex items-center justify-center p-4"
-                        }>
-                        <div className="flex flex-col gap-8 rounded-lg bg-neutral-900 p-8">
-                          <div className="flex flex-row justify-between">
-                            <Dialog.Title className="text-2xl">
-                              {t("index.wizard-address")}
-                            </Dialog.Title>
-                            <button
-                              onClick={() =>
-                                handleAddressModalClose(true, true)
-                              }
-                              className="rounded-full p-2 text-2xl transition-all hover:bg-white/10">
-                              <IoCloseSharp />
-                            </button>
-                          </div>
-                          <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-2">
-                              <label htmlFor="strasse">
-                                {t("index.wizard-street")}
-                              </label>
-                              <input
-                                value={
-                                  transportInformation.zielortRueckreiseAdresse
-                                    .strasse
-                                }
-                                onChange={(e) => {
-                                  setTransportInformation({
-                                    ...transportInformation,
-                                    zielortRueckreiseAdresse: {
-                                      ...transportInformation.zielortRueckreiseAdresse,
-                                      strasse: e.target.value,
-                                    },
-                                  });
-                                }}
-                                type="text"
-                                id="strasse"
-                                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                                  transportInformation.zielortRueckreiseAdresse
-                                    .strasse === ""
-                                    ? "ring-yellow-500"
-                                    : ""
-                                }`}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="flex flex-col gap-2">
-                                <label htmlFor="hausnummer">
-                                  {t("index.wizard-house-number")}
-                                </label>
-                                <input
-                                  value={
-                                    transportInformation
-                                      .zielortRueckreiseAdresse.hausnummer
-                                  }
-                                  onChange={(e) => {
-                                    setTransportInformation({
-                                      ...transportInformation,
-                                      zielortRueckreiseAdresse: {
-                                        ...transportInformation.zielortRueckreiseAdresse,
-                                        hausnummer: e.target.value,
-                                      },
-                                    });
-                                  }}
-                                  type="text"
-                                  id="hausnummer"
-                                  className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                                    transportInformation
-                                      .zielortRueckreiseAdresse.hausnummer ===
-                                    ""
-                                      ? "ring-yellow-500"
-                                      : ""
-                                  }`}
-                                />
-                              </div>
-
-                              <div className="col-span-2 flex flex-col gap-2 md:col-span-1">
-                                <label htmlFor="ort">
-                                  {t("index.wizard-ort")}
-                                </label>
-                                <input
-                                  value={
-                                    transportInformation.zielortRueckreise ?? ""
-                                  }
-                                  disabled={true}
-                                  type="text"
-                                  id="ort"
-                                  className="rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            disabled={!isModalDataValid(true, true)}
-                            className="flex items-center justify-center rounded-xl bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
-                            onClick={() => closeAddressModal(true, true)}>
-                            {t("index.wizard-save")}
-                          </button>
-                        </div>
-                      </Dialog.Panel>
-                    </Transition.Child>
-                  </Dialog>
-                </Transition>
+                <AddressModal
+                  isOpen={isZielortRueckreiseModalOpen}
+                  onClose={() => handleAddressModalClose(true, true)}
+                  onSave={() => closeAddressModal(true, true)}
+                  city={transportInformation.zielortRueckreise ?? ""}
+                  strasse={transportInformation.zielortRueckreiseAdresse.strasse}
+                  hausnummer={
+                    transportInformation.zielortRueckreiseAdresse.hausnummer
+                  }
+                  onStrasseChange={(val) =>
+                    setTransportInformation({
+                      ...transportInformation,
+                      zielortRueckreiseAdresse: {
+                        ...transportInformation.zielortRueckreiseAdresse,
+                        strasse: val,
+                      },
+                    })
+                  }
+                  onHausnummerChange={(val) =>
+                    setTransportInformation({
+                      ...transportInformation,
+                      zielortRueckreiseAdresse: {
+                        ...transportInformation.zielortRueckreiseAdresse,
+                        hausnummer: val,
+                      },
+                    })
+                  }
+                  isValid={isModalDataValid(true, true)}
+                />
+                {transportInformation.zielortRueckreise &&
+                  !TRAIN_STATIONS.includes(
+                    transportInformation.zielortRueckreise
+                  ) ? (
+                  <AddressPromptButton
+                    strasse={
+                      transportInformation.zielortRueckreiseAdresse.strasse
+                    }
+                    hausnummer={
+                      transportInformation.zielortRueckreiseAdresse.hausnummer
+                    }
+                    onClick={() => setIsZielortRueckreiseModalOpen(true)}
+                  />
+                ) : null}
               </div>
             </>
           ) : null}
           <div
-            className={`grid w-full grid-cols-1 gap-4 ${
-              transportInformation.rueckReise ? "md:grid-cols-2" : ""
-            }`}>
-            <div
-              className={`flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                transportInformation.hinreiseDatum === null
-                  ? "border-yellow-500"
-                  : ""
+            className={`grid w-full grid-cols-1 gap-4 ${transportInformation.rueckReise ? "md:grid-cols-2" : ""
               }`}>
-              <div className="group flex flex-1 flex-col">
-                <motion.span layout="position" className="break-all text-sm">
-                  {t("index.wizard-hinreise")}
-                </motion.span>
-                <div className={"flex flex-row justify-between"}>
-                  <span className="text-gray-300">
-                    {transportInformation.hinreiseDatum
-                      ? transportInformation.hinreiseDatum.format(
-                          "DD/MM/YYYY HH:mm"
-                        )
-                      : t("index.toast-enter-date")}
-                  </span>
-                  <DateTimePicker
-                    dateTitle={t("index.toast-enter-date")}
-                    timeTitle={t("index.toast-enter-time")}
-                    minDate={currentDate}
-                    value={transportInformation.hinreiseDatum}
-                    onChange={(newValue) => {
-                      setTransportInformation({
-                        ...transportInformation,
-                        hinreiseDatum: newValue,
-                      });
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-            {transportInformation.rueckReise ? (
-              <div
-                className={`flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-                  transportInformation.rueckreiseDatum === null
+            <DateTimePicker
+              dateTitle={t("index.toast-enter-date")}
+              timeTitle={t("index.toast-enter-time")}
+              minDate={currentDate}
+              value={transportInformation.hinreiseDatum}
+              onChange={(newValue) => {
+                setTransportInformation({
+                  ...transportInformation,
+                  hinreiseDatum: newValue,
+                });
+              }}
+              renderTrigger={({ open }) => (
+                <button
+                  type="button"
+                  onClick={open}
+                  className={`flex h-16 w-full flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 text-left transition hover:bg-[#17181C] ${transportInformation.hinreiseDatum === null
                     ? "border-yellow-500"
                     : ""
-                }`}>
-                <div className="group flex flex-1 flex-col">
-                  <motion.span layout="position" className="break-all text-sm">
-                    {t("index.wizard-ruckreise")}
-                  </motion.span>
-                  <div className={"flex flex-row justify-between"}>
-                    <span className="text-gray-300">
-                      {transportInformation.rueckreiseDatum
-                        ? transportInformation.rueckreiseDatum.format(
+                    }`}>
+                  <div className="group flex flex-1 flex-col">
+                    <motion.span layout="position" className="break-all text-sm">
+                      {t("index.wizard-hinreise")}
+                    </motion.span>
+                    <div className="flex flex-row items-center justify-between gap-2">
+                      <span className="tabular-nums text-gray-200">
+                        {transportInformation.hinreiseDatum
+                          ? transportInformation.hinreiseDatum.format(
                             "DD/MM/YYYY HH:mm"
                           )
-                        : t("index.toast-enter-date")}
-                    </span>
-                    <DateTimePicker
-                      disabled={transportInformation.hinreiseDatum === null}
-                      dateTitle={t("index.toast-enter-date")}
-                      timeTitle={t("index.toast-enter-time")}
-                      value={transportInformation.rueckreiseDatum}
-                      minDate={transportInformation.hinreiseDatum}
-                      onChange={(newValue) => {
-                        setTransportInformation({
-                          ...transportInformation,
-                          rueckreiseDatum: newValue,
-                        });
-                      }}
-                    />
+                          : t("index.toast-enter-date")}
+                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="h-6 w-6 shrink-0 text-white">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
+                        />
+                      </svg>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </button>
+              )}
+            />
+            {transportInformation.rueckReise ? (
+              <DateTimePicker
+                disabled={transportInformation.hinreiseDatum === null}
+                dateTitle={t("index.toast-enter-date")}
+                timeTitle={t("index.toast-enter-time")}
+                value={transportInformation.rueckreiseDatum}
+                minDate={transportInformation.hinreiseDatum}
+                onChange={(newValue) => {
+                  setTransportInformation({
+                    ...transportInformation,
+                    rueckreiseDatum: newValue,
+                  });
+                }}
+                renderTrigger={({ open, disabled: isDisabled }) => (
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={open}
+                    className={`flex h-16 w-full flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 text-left transition ${isDisabled
+                      ? "cursor-not-allowed opacity-60"
+                      : "hover:bg-[#17181C]"
+                      } ${transportInformation.rueckreiseDatum === null
+                        ? "border-yellow-500"
+                        : ""
+                      }`}>
+                    <div className="group flex flex-1 flex-col">
+                      <motion.span
+                        layout="position"
+                        className="break-all text-sm">
+                        {t("index.wizard-ruckreise")}
+                      </motion.span>
+                      <div className="flex flex-row items-center justify-between gap-2">
+                        <span className="tabular-nums text-gray-200">
+                          {transportInformation.rueckreiseDatum
+                            ? transportInformation.rueckreiseDatum.format(
+                              "DD/MM/YYYY HH:mm"
+                            )
+                            : t("index.toast-enter-date")}
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className={`h-6 w-6 shrink-0 ${isDisabled ? "text-white/20" : "text-white"
+                            }`}>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
+                )}
+              />
             ) : null}
           </div>
-          <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-3">
-            <NumberInput
-              title={t("index.wizard-koffer").toString()}
-              value={transportInformation.koffer}
-              min={0}
-              max={6}
-              onChange={(e) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  koffer: e,
-                })
-              }
-            />
-            <NumberInput
-              title={t("index.wizard-handgepaeck").toString()}
-              value={transportInformation.handgepaeck}
-              min={0}
-              max={6}
-              onChange={(e) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  handgepaeck: e,
-                })
-              }
-            />
-            <NumberInput
-              title={t("index.wizard-personen").toString()}
-              value={transportInformation.personen}
-              min={1}
-              max={7}
-              onChange={(e) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  personen: e,
-                })
-              }
-            />
-          </div>
+          <LuggageSection
+            luggageMode={luggageMode}
+            onLuggageModeChange={handleLuggageModeChange}
+            koffer={transportInformation.koffer}
+            handgepaeck={transportInformation.handgepaeck}
+            personen={transportInformation.personen}
+            onKofferChange={(e) =>
+              setTransportInformation({
+                ...transportInformation,
+                koffer: e,
+              })
+            }
+            onHandgepaeckChange={(e) =>
+              setTransportInformation({
+                ...transportInformation,
+                handgepaeck: e,
+              })
+            }
+            onPersonenChange={(e) =>
+              setTransportInformation({
+                ...transportInformation,
+                personen: e,
+              })
+            }
+          />
           <div className="grid w-full grid-cols-1 gap-4">
             <div className="relative w-full">
               <Listbox
@@ -1584,22 +1305,6 @@ const BahnhofTransfer = ({
             </div>
           </div>
         </div>
-        <Switch
-          checked={transportInformation.rueckReise}
-          onChange={(e) => {
-            setTransportInformation({
-              ...transportInformation,
-              rueckReise: e,
-            });
-          }}
-          className="flex flex-row items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600">
-            {transportInformation.rueckReise ? (
-              <IoCheckmark className="text-lg" />
-            ) : null}
-          </div>
-          <span>{t("index.wizard-ruckreise")}</span>
-        </Switch>
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <button
             className="flex items-end rounded-lg bg-gray-600 py-2 px-4 transition-all hover:bg-gray-500"
@@ -1641,13 +1346,14 @@ const BahnhofTransfer = ({
             </button>
             <button
               disabled={!getStageIsValid()}
-              className="flex items-end rounded-lg bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
+              className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
               onClick={(e) => {
+                trackWizardStep("bahnhof", activeStep + 1);
                 setActiveStep(activeStep + 1);
               }}>
-              <div className="flex flex-row items-center gap-4">
-                <span className="text-sm font-medium">
-                  {t("index.wizard-weiter").toUpperCase()}
+              <div className="flex flex-row items-center gap-3">
+                <span>
+                  {t("index.wizard-weiter")}
                 </span>
                 <BsChevronRight />
               </div>
@@ -1676,9 +1382,8 @@ const BahnhofTransfer = ({
                 }}
                 type="text"
                 id="name"
-                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                  personalInformation.name === "" ? "ring-yellow-500" : ""
-                }`}
+                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${personalInformation.name === "" ? "ring-yellow-500" : ""
+                  }`}
               />
             </div>
 
@@ -1707,9 +1412,8 @@ const BahnhofTransfer = ({
                     telefon: e.target.value,
                   });
                 }}
-                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                  personalInformation.telefon === "" ? "ring-yellow-500" : ""
-                }`}
+                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${personalInformation.telefon === "" ? "ring-yellow-500" : ""
+                  }`}
                 type="tel"
                 id="tel"
               />
@@ -1724,9 +1428,8 @@ const BahnhofTransfer = ({
                     email: e.target.value,
                   });
                 }}
-                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${
-                  personalInformation.email === "" ? "ring-yellow-500" : ""
-                }`}
+                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${personalInformation.email === "" ? "ring-yellow-500" : ""
+                  }`}
                 type="text"
                 id="email"
               />
@@ -1756,26 +1459,27 @@ const BahnhofTransfer = ({
         </div>
         <div className="flex flex-row justify-between gap-8">
           <button
-            className="flex items-end rounded-lg bg-gray-600 py-2 px-4 transition-all hover:bg-gray-500"
+            className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
             onClick={(e) => {
               setActiveStep(activeStep - 1);
             }}>
-            <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row items-center gap-3">
               <BsChevronLeft />
-              <span className="text-sm font-medium">
-                {t("index.wizard-zuruck").toUpperCase()}
+              <span>
+                {t("index.wizard-zuruck")}
               </span>
             </div>
           </button>
           <button
             disabled={!getStageIsValid()}
-            className="flex items-end rounded-lg bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
+            className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
             onClick={(e) => {
+              trackWizardStep("bahnhof", activeStep + 1);
               setActiveStep(activeStep + 1);
             }}>
-            <div className="flex flex-row items-center gap-4">
-              <span className="text-sm font-medium">
-                {t("index.wizard-weiter").toUpperCase()}
+            <div className="flex flex-row items-center gap-3">
+              <span>
+                {t("index.wizard-weiter")}
               </span>
               <BsChevronRight />
             </div>
@@ -1927,9 +1631,8 @@ const BahnhofTransfer = ({
               onChange={(e) => {
                 setDatenErklaerung(e);
               }}
-              className={`flex w-fit flex-row items-center gap-4 rounded-lg p-2 ring-yellow-500 ${
-                datenErklaerung ? "ring-0" : "ring-2"
-              }`}>
+              className={`flex w-fit flex-row items-center gap-4 rounded-lg p-2 ring-yellow-500 ${datenErklaerung ? "ring-0" : "ring-2"
+                }`}>
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600">
                 {datenErklaerung ? <IoCheckmark className="text-xl" /> : null}
               </div>
@@ -1948,20 +1651,20 @@ const BahnhofTransfer = ({
             </div>
             <div className="flex flex-row justify-between">
               <button
-                className="flex items-center rounded-lg bg-gray-600 py-2 px-4 transition-all hover:bg-gray-500"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
                 onClick={(e) => {
                   setActiveStep(activeStep - 1);
                 }}>
-                <div className="flex flex-row items-center gap-4">
+                <div className="flex flex-row items-center gap-3">
                   <BsChevronLeft />
-                  <span className="text-sm font-medium">
-                    {t("index.wizard-zuruck").toUpperCase()}
+                  <span>
+                    {t("index.wizard-zuruck")}
                   </span>
                 </div>
               </button>
               <button
                 disabled={!datenErklaerung}
-                className="flex items-center rounded-lg bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
+                className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
                 onClick={() => {
                   submitForm(
                     "bahnhof",
@@ -1969,6 +1672,15 @@ const BahnhofTransfer = ({
                     personalInformation,
                     i18n.language
                   );
+                  trackBookingSubmit({
+                    transferType: "bahnhof",
+                    bookingMode: transportInformation.art,
+                    pickup: transportInformation.abholort,
+                    dropoff: transportInformation.zielort,
+                    roundTrip: transportInformation.rueckReise,
+                    vehicle: transportInformation.fahrzeug,
+                    priceEur: parseFloat(getPrice()) || 0,
+                  });
                   setIsToastOpen(true);
                   setAbgeschickt(true);
                   setTimeout(() => {
@@ -1977,8 +1689,8 @@ const BahnhofTransfer = ({
                     setIsToastOpen(false);
                   }, 5000);
                 }}>
-                <span className="text-sm font-medium">
-                  {t("index.wizard-abschicken").toUpperCase()}
+                <span>
+                  {t("index.wizard-abschicken")}
                 </span>
               </button>
             </div>
@@ -1994,18 +1706,16 @@ const BahnhofTransfer = ({
           isOpen={isToastOpen}
           setIsOpen={setIsToastOpen}
           severity="success"
-          title={`${
-            transportInformation.art === "Anfrage" ||
+          title={`${transportInformation.art === "Anfrage" ||
             transportInformation.art === "Request"
-              ? t("index.anfrage")
-              : t("index.bestellung")
-          } ${t("index.toast-success")}`}
-          text={`${
-            transportInformation.art === "Anfrage" ||
+            ? t("index.anfrage")
+            : t("index.bestellung")
+            } ${t("index.toast-success")}`}
+          text={`${transportInformation.art === "Anfrage" ||
             transportInformation.art === "Request"
-              ? t("index.anfrage")
-              : t("index.bestellung")
-          } ${t("index.toast-success-text")}`}
+            ? t("index.anfrage")
+            : t("index.bestellung")
+            } ${t("index.toast-success-text")}`}
         />
       </>
     );

@@ -114,6 +114,7 @@ const Zielorte = ["Flughafen", "Hauptbahnhof", "Südbahnhof"].sort((a, b) =>
 
 const Abholorte = [
   "Bad Homburg",
+  "Bonames (Frankfurt)",
   "Friedrichsdorf",
   "Burgholzhausen (Friedrichsdorf)",
   "Köppern (Friedrichsdorf)",

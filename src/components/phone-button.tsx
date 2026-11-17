@@ -1,106 +1,91 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { IoLogoWhatsapp } from "react-icons/io5";
+import { trackContactConversion } from "@/lib/analytics";
 
-const PhoneButton = () => {
+export default function PhoneButton() {
   const [isOpen, setIsOpen] = useState(false);
+  const { locale } = useRouter();
+  const isEn = locale === "en";
 
-  const gtag_report_conversion = (url: string): boolean => {
-    const callback = () => {
-      if (url) {
-        window.location.href = url;
-      }
-    };
-    if (window.gtag) {
-      window.gtag('event', 'conversion', {
-        'send_to': 'AW-627893341/pVO8CNCT67YZEN3Is6sC', 
-        'event_callback': callback
-      });
-    } else {
-      console.error('gtag is not defined');
-    }
-    return false;
+  const toggleOpen = () => {
+    setIsOpen((prev) => !prev);
   };
 
+  const whatsappUrl =
+    "https://api.whatsapp.com/send/?phone=%2B491607113183&text=Hallo%2C+ich+w%C3%BCrde+gerne+eine+Fahrt+buchen.+Meine+Abholadresse+ist+%3A+%0A%0AZielort%3A%0ADatum%3A+%0AUhrzeit%3A+%0APersonenanzahl%3A+%0AKofferanzahl%3A+%0A%0ADanke+&type=phone_number&app_absent=0";
+
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-1">
+    <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-1">
       <AnimatePresence>
         {isOpen && (
-          <div className="scale-75" key={"1"}>
-            <a 
-              href="https://api.whatsapp.com/send/?phone=%2B491607113183&text=Hallo%2C+ich+w%C3%BCrde+gerne+eine+Fahrt+buchen...&type=phone_number&app_absent=0"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.75, y: 120 }}
+            animate={{ opacity: 1, scale: 0.75, y: 0 }}
+            exit={{ opacity: 0, scale: 0.75, y: 120 }}
+            transition={{ duration: 0.12 }}
+            className="flex flex-col gap-2">
+            <a
               target="_blank"
-              rel="noreferrer"
-              onClick={() => gtag_report_conversion('https://api.whatsapp.com/send/?phone=%2B491607113183&text=Hallo%2C+ich+w%C3%BCrde+gerne+eine+Fahrt+buchen...&type=phone_number&app_absent=0')}>
-              <motion.button
-                className="z-40 rounded-full bg-green-500 p-4 hover:cursor-pointer hover:bg-green-600"
-                initial={{ y: 100 }}
-                animate={{ y: isOpen ? 0 : 100 }}
-                transition={{ ease: "linear" }}
-                exit={{ y: 100 }}>
-                <svg
-                  stroke="currentColor"
-                  fill="currentColor"
-                  strokeWidth="0"
-                  viewBox="0 0 16 16"
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg">
-                  <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"></path>
-                </svg>
-              </motion.button>
+              rel="noopener noreferrer"
+              aria-label={isEn ? "Write via WhatsApp" : "Per WhatsApp schreiben"}
+              onClick={() => trackContactConversion("whatsapp", whatsappUrl, true)}
+              href={whatsappUrl}
+              className="rounded-full bg-green-500 p-4 text-white shadow-lg transition-all hover:cursor-pointer hover:bg-green-600">
+              <IoLogoWhatsapp className="h-6 w-6 text-white" />
             </a>
-          </div>
-        )}
-        {isOpen && (
-          <div className="scale-75" key={"2"}>
-            <motion.a 
+            <a
               href="tel:+496172923232"
-              onClick={() => gtag_report_conversion('tel:06172 923232')}>
-              <motion.button
-                className="z-40 rounded-full bg-green-500 p-4 hover:cursor-pointer hover:bg-green-600"
-                initial={{ y: 50 }}
-                animate={{ y: isOpen ? 0 : 50 }}
-                transition={{ ease: "linear" }}
-                exit={{ y: 50 }}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="h-6 w-6 -scale-x-[1]">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
-                  />
-                </svg>
-              </motion.button>
-            </motion.a>
-          </div>
+              aria-label={
+                isEn
+                  ? "Call +49 6172 / 92 32 32"
+                  : "+49 6172 / 92 32 32 anrufen"
+              }
+              onClick={() => trackContactConversion("phone", "tel:+496172923232")}
+              className="rounded-full bg-green-500 p-4 text-white shadow-lg transition-all hover:cursor-pointer hover:bg-green-600">
+              <svg
+                width="24px"
+                height="24px"
+                className="rotate-[10deg] text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M21 5.5C21 14.0604 14.0604 21 5.5 21C5.11378 21 4.73086 20.9859 4.35172 20.9581C3.91662 20.9262 3.69906 20.9103 3.50103 20.7967C3.33701 20.7027 3.18146 20.532 3.09925 20.3612C3 20.1552 3 19.9181 3 19.4441V16.6977C3 16.2923 3 16.0896 3.06728 15.9158C3.12673 15.7623 3.22296 15.6256 3.34743 15.518C3.48829 15.3962 3.67961 15.3292 4.06224 15.1951L7.28991 14.0637C7.73766 13.9068 7.96154 13.8283 8.1743 13.8414C8.36187 13.8529 8.54328 13.9158 8.69764 14.0229C8.87266 14.1444 9.00567 14.3408 9.27168 14.7336L10 15.809C12.6487 14.5446 14.5416 12.6476 15.806 10L14.7495 9.28179C14.3547 9.01342 14.1573 8.87923 14.0357 8.70253C13.9285 8.54672 13.8661 8.36363 13.8559 8.17464C13.8444 7.96039 13.9255 7.73597 14.0877 7.28714L15.1976 4.21599C15.3358 3.83365 15.4049 3.64247 15.5305 3.50205C15.6416 3.3779 15.7824 3.28322 15.94 3.22668C16.1186 3.16266 16.3274 3.17316 16.7451 3.19414L19.4573 3.3304C19.9301 3.35415 20.1666 3.36603 20.3712 3.47486C20.5408 3.56506 20.7082 3.72943 20.7999 3.89811C20.9106 4.10164 20.9228 4.31687 20.9473 4.74734C20.9822 5.36004 21 5.20912 21 5.5Z"
+                  stroke="#FFFFFF"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
+          </motion.div>
         )}
       </AnimatePresence>
+
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="z-50 rounded-full bg-green-500 p-4 transition-all hover:cursor-pointer hover:bg-green-600">
-        <motion.svg
-          initial={{ rotate: 270 }}
-          animate={{ rotate: isOpen ? 315 : 270 }}
-          transition={{ duration: 0.3 }}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="currentColor"
+        type="button"
+        onClick={toggleOpen}
+        aria-expanded={isOpen}
+        aria-label={isEn ? "Open contact options" : "Telefon & WhatsApp öffnen"}
+        className="rounded-full bg-green-500 p-4 text-white shadow-lg transition-all hover:cursor-pointer hover:bg-green-600 active:scale-95">
+        <svg
+          width="24px"
+          height="24px"
+          className="rotate-[10deg] text-white"
           viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="h-6 w-6">
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg">
           <path
+            d="M21 5.5C21 14.0604 14.0604 21 5.5 21C5.11378 21 4.73086 20.9859 4.35172 20.9581C3.91662 20.9262 3.69906 20.9103 3.50103 20.7967C3.33701 20.7027 3.18146 20.532 3.09925 20.3612C3 20.1552 3 19.9181 3 19.4441V16.6977C3 16.2923 3 16.0896 3.06728 15.9158C3.12673 15.7623 3.22296 15.6256 3.34743 15.518C3.48829 15.3962 3.67961 15.3292 4.06224 15.1951L7.28991 14.0637C7.73766 13.9068 7.96154 13.8283 8.1743 13.8414C8.36187 13.8529 8.54328 13.9158 8.69764 14.0229C8.87266 14.1444 9.00567 14.3408 9.27168 14.7336L10 15.809C12.6487 14.5446 14.5416 12.6476 15.806 10L14.7495 9.28179C14.3547 9.01342 14.1573 8.87923 14.0357 8.70253C13.9285 8.54672 13.8661 8.36363 13.8559 8.17464C13.8444 7.96039 13.9255 7.73597 14.0877 7.28714L15.1976 4.21599C15.3358 3.83365 15.4049 3.64247 15.5305 3.50205C15.6416 3.3779 15.7824 3.28322 15.94 3.22668C16.1186 3.16266 16.3274 3.17316 16.7451 3.19414L19.4573 3.3304C19.9301 3.35415 20.1666 3.36603 20.3712 3.47486C20.5408 3.56506 20.7082 3.72943 20.7999 3.89811C20.9106 4.10164 20.9228 4.31687 20.9473 4.74734C20.9822 5.36004 21 5.20912 21 5.5Z"
+            stroke="#FFFFFF"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
           />
-        </motion.svg>
+        </svg>
       </button>
     </div>
   );
-};
-
-export default PhoneButton;
+}

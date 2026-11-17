@@ -19,6 +19,8 @@ const NumberInput = ({
         <span className={"truncate break-all text-sm"}>{title}</span>
         <div className="flex flex-row justify-between">
           <button
+            type="button"
+            aria-label={`Weniger ${title}`}
             className="hover:[&>*]:text-[#257BCC]"
             onClick={() => {
               if (value > 0 && value > min) onChange(value - 1);
@@ -45,9 +47,18 @@ const NumberInput = ({
             className={
               "overflow-hidden bg-transparent text-center text-xl outline-none"
             }
-            onChange={(e) => onChange(parseInt(e.target.value))}
+            onChange={(e) => {
+              const parsed = parseInt(e.target.value, 10);
+              if (Number.isNaN(parsed)) {
+                onChange(min);
+                return;
+              }
+              onChange(Math.min(max, Math.max(min, parsed)));
+            }}
           />
           <button
+            type="button"
+            aria-label={`Mehr ${title}`}
             className="hover:[&>*]:text-[#257BCC]"
             onClick={() => {
               if (value < max) onChange(value + 1);

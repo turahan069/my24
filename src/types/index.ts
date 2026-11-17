@@ -27,7 +27,11 @@ type ZielortType =
 type FahrzeugType =
   | "Business Limousine"
   | "Business Kombi"
-  | "Großraum Limousine";
+  | "Großraum Limousine"
+  | "Business Class"
+  | "First Class"
+  | "First Class Van"
+  | "Nur Fahrer (Ihr Fahrzeug)";
 
 type TransportArtType = "Bestellung" | "Anfrage" | "Order" | "Request";
 

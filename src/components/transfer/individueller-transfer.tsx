@@ -11,14 +11,48 @@ import { BsChevronDown, BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { IoCheckmark } from "react-icons/io5";
 import { useTranslation } from "next-i18next";
 import Toast from "../toast";
-import NumberInput from "../number-input";
+import { AppleSegmentedControl } from "../apple-segmented-control";
+import { StreetAutocompleteInput } from "../street-autocomplete-input";
+import LuggageSection, { type LuggageMode } from "../luggage-section";
 import submitForm from "@/utils";
+import { trackBookingSubmit, trackWizardStep } from "@/lib/analytics";
+
+const HOURLY_HOURS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+const KM_PER_HOUR = 25;
+
+const HOURLY_CLASSES = [
+  {
+    id: "Business Class" as const,
+    rate: 69,
+    subtitleDe: "Business Limousine · bis 4 Personen",
+    subtitleEn: "Business Sedan · up to 4 guests",
+  },
+  {
+    id: "First Class" as const,
+    rate: 79,
+    subtitleDe: "Oberklasse-Limousine · VIP-Komfort",
+    subtitleEn: "First Class Sedan · flagship comfort",
+  },
+  {
+    id: "First Class Van" as const,
+    rate: 79,
+    subtitleDe: "Großraum-Van · bis 7 Personen & Gepäck",
+    subtitleEn: "First Class Van · up to 7 guests & luggage",
+  },
+] as const;
+
+export type HourlyProvision = "with_vehicle" | "driver_only";
+export type HourlyClassId = (typeof HOURLY_CLASSES)[number]["id"];
 
 const IndividuellerTransfer = ({
   activeStep,
   setActiveStep,
   personalInformation,
   setPersonalInformation,
+  initialServiceMode = "point",
+  initialHourlyClass = "Business Class",
+  initialHourlyProvision = "with_vehicle",
+  selectionNonce = 0,
 }: {
   personalInformation: PersonalInformationType;
   setPersonalInformation: React.Dispatch<
@@ -26,7 +60,36 @@ const IndividuellerTransfer = ({
   >;
   activeStep: number;
   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+  initialServiceMode?: "point" | "hourly" | "courier";
+  initialHourlyClass?: HourlyClassId;
+  initialHourlyProvision?: HourlyProvision;
+  selectionNonce?: number;
 }) => {
+  const [serviceMode, setServiceMode] = useState<
+    "point" | "hourly" | "courier"
+  >(initialServiceMode);
+  const [hourlyProvision, setHourlyProvision] = useState<HourlyProvision>(
+    initialHourlyProvision
+  );
+  const [hourlyHours, setHourlyHours] = useState<number>(4);
+  const [hourlyClass, setHourlyClass] =
+    useState<HourlyClassId>(initialHourlyClass);
+
+  useEffect(() => {
+    if (selectionNonce > 0) {
+      setServiceMode(initialServiceMode);
+      setHourlyClass(initialHourlyClass);
+      setHourlyProvision(initialHourlyProvision);
+    }
+  }, [
+    selectionNonce,
+    initialServiceMode,
+    initialHourlyClass,
+    initialHourlyProvision,
+  ]);
+  const [pickupLocation, setPickupLocation] = useState<string>("");
+  const [luggageMode, setLuggageMode] = useState<LuggageMode>("hand");
+
   const [transportInformation, setTransportInformation] = useState<{
     nachricht: string;
     koffer: number;
@@ -85,7 +148,21 @@ const IndividuellerTransfer = ({
     }
   }, [i18n.language, transportInformation.art]);
 
+  function handleLuggageModeChange(mode: LuggageMode) {
+    setLuggageMode(mode);
+    setTransportInformation((prev) => ({
+      ...prev,
+      koffer: mode === "hand" ? 0 : Math.max(1, prev.koffer),
+    }));
+  }
+
   function resetForm() {
+    setServiceMode(initialServiceMode);
+    setHourlyProvision(initialHourlyProvision);
+    setHourlyHours(4);
+    setHourlyClass(initialHourlyClass);
+    setPickupLocation("");
+    setLuggageMode("hand");
     setTransportInformation({
       nachricht: "",
       koffer: 0,
@@ -99,10 +176,12 @@ const IndividuellerTransfer = ({
   }
 
   useEffect(() => {
+    if (serviceMode === "hourly") return;
+
     if (
-      transportInformation.koffer < 2 &&
-      transportInformation.handgepaeck < 2 &&
-      transportInformation.personen < 4
+      transportInformation.koffer <= 2 &&
+      transportInformation.handgepaeck <= 2 &&
+      transportInformation.personen <= 4
     ) {
       if (transportInformation.fahrzeug !== "Business Limousine")
         setTransportInformation({
@@ -112,9 +191,9 @@ const IndividuellerTransfer = ({
 
       return;
     } else if (
-      transportInformation.koffer < 4 &&
-      transportInformation.handgepaeck < 4 &&
-      transportInformation.personen < 4
+      transportInformation.koffer <= 4 &&
+      transportInformation.handgepaeck <= 4 &&
+      transportInformation.personen <= 4
     ) {
       if (transportInformation.fahrzeug !== "Business Kombi")
         setTransportInformation({
@@ -130,17 +209,31 @@ const IndividuellerTransfer = ({
         ...transportInformation,
         fahrzeug: "Großraum Limousine",
       });
-  }, [transportInformation]);
+  }, [transportInformation, serviceMode]);
+
+  const selectedHourlyClassObj =
+    HOURLY_CLASSES.find((c) => c.id === hourlyClass) ?? HOURLY_CLASSES[0];
+  const hourlyIncludedKm = hourlyHours * KM_PER_HOUR;
+  const hourlyCalculatedPrice =
+    serviceMode === "hourly" && hourlyProvision === "with_vehicle"
+      ? (hourlyHours * selectedHourlyClassObj.rate).toFixed(2)
+      : null;
 
   function getStageIsValid() {
     switch (activeStep) {
       default:
         return datenErklaerung;
       case 1:
+        if (serviceMode === "hourly") {
+          return (
+            transportInformation.art !== null &&
+            pickupLocation.trim().length > 0
+          );
+        }
         return (
           transportInformation.art !== null &&
           transportInformation.fahrzeug !== null &&
-          transportInformation.nachricht.length > 0
+          transportInformation.nachricht.trim().length > 0
         );
       case 2:
         return (
@@ -211,21 +304,194 @@ const IndividuellerTransfer = ({
               </Listbox.Options>
             </Listbox>
           </div>
+          <div className="col-span-2">
+            <AppleSegmentedControl<"point" | "hourly" | "courier">
+              label={t("wizard-extra.service-mode-label")}
+              value={serviceMode}
+              onChange={setServiceMode}
+              columnsClassName="grid-cols-1 sm:grid-cols-3"
+              options={[
+                { id: "point", label: t("wizard-extra.mode-point") },
+                { id: "hourly", label: t("wizard-extra.mode-hourly") },
+                { id: "courier", label: t("wizard-extra.mode-courier") },
+              ]}
+            />
+          </div>
+
+          {serviceMode === "hourly" ? (
+            <div className="col-span-2 flex flex-col gap-5 rounded-xl border border-white/10 bg-[#141416] p-4 sm:p-5">
+              <AppleSegmentedControl<HourlyProvision>
+                value={hourlyProvision}
+                onChange={setHourlyProvision}
+                columnsClassName="grid-cols-1 sm:grid-cols-2"
+                options={[
+                  {
+                    id: "with_vehicle",
+                    label: t("wizard-extra.hourly-with-vehicle"),
+                  },
+                  {
+                    id: "driver_only",
+                    label: t("wizard-extra.hourly-driver-only"),
+                  },
+                ]}
+              />
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div
+                  className={`flex h-16 flex-col justify-center rounded-xl border bg-[#111111] px-4 py-2 ${
+                    pickupLocation.trim().length === 0
+                      ? "border-yellow-500"
+                      : "border-[#257BCC]"
+                  }`}>
+                  <label
+                    htmlFor="hourly-pickup-location"
+                    className="text-xs font-medium text-neutral-300">
+                    {t("wizard-extra.hourly-pickup-label")}
+                  </label>
+                  <StreetAutocompleteInput
+                    id="hourly-pickup-location"
+                    value={pickupLocation}
+                    onChange={setPickupLocation}
+                    selectFullAddress={true}
+                    placeholder={t(
+                      "wizard-extra.hourly-pickup-placeholder"
+                    ).toString()}
+                    className="w-full bg-transparent text-base text-white placeholder:text-neutral-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="relative w-full">
+                  <Listbox value={hourlyHours} onChange={setHourlyHours}>
+                    <Listbox.Button className="w-full text-left">
+                      <div className="flex h-16 flex-row items-center justify-between gap-4 rounded-xl border border-[#257BCC] bg-[#111111] px-4 py-2">
+                        <div className="flex flex-1 flex-col">
+                          <span className="text-xs font-medium text-neutral-300">
+                            {t("wizard-extra.hourly-duration-label")}
+                          </span>
+                          <span className="text-base font-medium text-white">
+                            {hourlyHours}{" "}
+                            {i18n.language === "en" ? "hrs" : "Std."} ·{" "}
+                            {i18n.language === "en" ? "incl." : "inkl."}{" "}
+                            {hourlyHours * KM_PER_HOUR} km
+                          </span>
+                        </div>
+                        <BsChevronDown className="shrink-0 text-neutral-300" />
+                      </div>
+                    </Listbox.Button>
+                    <Listbox.Options className="absolute top-[4.25rem] z-20 max-h-72 w-full overflow-y-auto rounded-2xl border border-white/15 bg-[#1C1C1E]/95 py-1.5 shadow-2xl backdrop-blur-xl focus:outline-none">
+                      {HOURLY_HOURS.map((hours) => {
+                        const km = hours * KM_PER_HOUR;
+                        const selected = hourlyHours === hours;
+                        return (
+                          <Listbox.Option
+                            key={hours}
+                            value={hours}
+                            className={({ active }) =>
+                              `flex cursor-pointer select-none items-center gap-2.5 px-3.5 py-2 text-sm transition ${
+                                active
+                                  ? "bg-[#257BCC] text-white"
+                                  : "text-neutral-100"
+                              }`
+                            }>
+                            <span className="flex w-4 shrink-0 items-center justify-center">
+                              {selected ? (
+                                <IoCheckmark className="h-4 w-4" />
+                              ) : null}
+                            </span>
+                            <span>
+                              {hours} {i18n.language === "en" ? "hrs" : "Std."}{" "}
+                              · {i18n.language === "en" ? "incl." : "inkl."}{" "}
+                              {km} km
+                            </span>
+                          </Listbox.Option>
+                        );
+                      })}
+                    </Listbox.Options>
+                  </Listbox>
+                </div>
+              </div>
+
+              {hourlyProvision === "with_vehicle" ? (
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-neutral-300">
+                    {t("wizard-extra.hourly-class-label")}
+                  </span>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    {HOURLY_CLASSES.map((cls) => {
+                      const active = hourlyClass === cls.id;
+                      const hourUnit =
+                        i18n.language === "en" ? "hr" : "Std.";
+                      return (
+                        <button
+                          key={cls.id}
+                          type="button"
+                          onClick={() => setHourlyClass(cls.id)}
+                          className={`flex h-full flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                            active
+                              ? "border-[#257BCC] bg-[#16202C] shadow-sm"
+                              : "border-white/10 bg-[#111111] hover:border-white/25"
+                          }`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-semibold text-white">
+                              {cls.id}
+                            </span>
+                            <span
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
+                                active
+                                  ? "border-[#257BCC] bg-[#257BCC] text-white"
+                                  : "border-white/20 text-transparent"
+                              }`}>
+                              <IoCheckmark className="h-3.5 w-3.5" />
+                            </span>
+                          </div>
+                          <p className="mt-1.5 text-xs leading-relaxed text-neutral-400">
+                            {i18n.language === "en"
+                              ? cls.subtitleEn
+                              : cls.subtitleDe}
+                          </p>
+                          <div className="mt-4 border-t border-white/10 pt-2.5 text-sm font-semibold text-white">
+                            {cls.rate} €{" "}
+                            <span className="text-xs font-normal text-neutral-400">
+                              / {hourUnit}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-white/10 bg-[#111111] p-4 text-sm leading-relaxed text-neutral-300">
+                  {t("wizard-extra.hourly-driver-only-note")}
+                </div>
+              )}
+
+              <p className="text-xs text-neutral-400">
+                {t("wizard-extra.hourly-note")}
+              </p>
+            </div>
+          ) : null}
+
           <div
-            className={`col-span-2 flex h-64 flex-1 flex-col gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${
-              transportInformation.nachricht.length === 0
+            className={`col-span-2 flex ${
+              serviceMode === "hourly" ? "h-36" : "h-56 md:h-64"
+            } flex-1 flex-col gap-4 rounded-xl border-[1px] bg-[#111111] py-2.5 px-4 ${
+              serviceMode !== "hourly" &&
+              transportInformation.nachricht.trim().length === 0
                 ? "border-yellow-500"
-                : ""
+                : "border-[#257BCC]"
             }`}>
             <div className="flex h-full flex-1 flex-col">
               <motion.span layout="position" className={"break-all text-sm"}>
-                {t("index.wizard-nachricht")}
+                {serviceMode === "hourly"
+                  ? t("wizard-extra.hourly-route-optional")
+                  : t("index.wizard-nachricht")}
               </motion.span>
               <textarea
                 placeholder={t("index.wizard-placeholder-2").toString()}
                 value={transportInformation.nachricht}
                 className={
-                  "h-full resize-none bg-transparent text-xl outline-none"
+                  "h-full resize-none bg-transparent text-lg text-white outline-none placeholder:text-neutral-500"
                 }
                 onChange={(e) =>
                   setTransportInformation({
@@ -236,91 +502,88 @@ const IndividuellerTransfer = ({
               />
             </div>
           </div>
-          <div className="relative col-span-2 w-full md:col-span-1">
-            <Listbox
-              value={transportInformation.fahrzeug}
-              onChange={(e) => {
+
+          {serviceMode !== "hourly" ? (
+            <div className="relative col-span-2 w-full">
+              <Listbox
+                value={transportInformation.fahrzeug}
+                onChange={(e) => {
+                  setTransportInformation({
+                    ...transportInformation,
+                    fahrzeug: e,
+                  });
+                }}>
+                <Listbox.Button className={"w-full"}>
+                  <div className="flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4">
+                    <div className="group flex flex-1 flex-col">
+                      <motion.span
+                        layout="position"
+                        className={
+                          "text-left " +
+                          (transportInformation.fahrzeug
+                            ? "text-sm"
+                            : "text-md")
+                        }>
+                        {t("index.wizard-fahrzeuge")}
+                      </motion.span>
+                      <div className="text-left">
+                        {transportInformation.fahrzeug}
+                      </div>
+                    </div>
+                    <BsChevronDown />
+                  </div>
+                </Listbox.Button>
+                <Listbox.Options
+                  className={
+                    "absolute top-16 z-10 max-h-48 w-full overflow-hidden rounded-lg bg-neutral-900"
+                  }>
+                  <motion.div
+                    initial={{ y: -50 }}
+                    animate={{ y: 0 }}
+                    exit={{ y: -50 }}>
+                    {Fahrzeuge.map((fahrzeug) => (
+                      <Listbox.Option
+                        className={
+                          "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
+                        }
+                        key={fahrzeug}
+                        value={fahrzeug}>
+                        {fahrzeug}
+                      </Listbox.Option>
+                    ))}
+                  </motion.div>
+                </Listbox.Options>
+              </Listbox>
+            </div>
+          ) : null}
+
+          <div className="col-span-2">
+            <LuggageSection
+              luggageMode={luggageMode}
+              onLuggageModeChange={handleLuggageModeChange}
+              koffer={transportInformation.koffer}
+              handgepaeck={transportInformation.handgepaeck}
+              personen={transportInformation.personen}
+              onKofferChange={(e) =>
                 setTransportInformation({
                   ...transportInformation,
-                  fahrzeug: e,
-                });
-              }}>
-              <Listbox.Button className={"w-full"}>
-                <div className="flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4">
-                  <div className="group flex flex-1 flex-col">
-                    <motion.span
-                      layout="position"
-                      className={
-                        "text-left " +
-                        (transportInformation.fahrzeug ? "text-sm" : "text-md")
-                      }>
-                      {t("index.wizard-fahrzeuge")}
-                    </motion.span>
-                    <div className="text-left">
-                      {transportInformation.fahrzeug}
-                    </div>
-                  </div>
-                  <BsChevronDown />
-                </div>
-              </Listbox.Button>
-              <Listbox.Options
-                className={
-                  "absolute top-16 z-10 max-h-48 w-full overflow-hidden rounded-lg bg-neutral-900"
-                }>
-                <motion.div
-                  initial={{ y: -50 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -50 }}>
-                  {Fahrzeuge.map((fahrzeug) => (
-                    <Listbox.Option
-                      className={
-                        "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                      }
-                      key={fahrzeug}
-                      value={fahrzeug}>
-                      {fahrzeug}
-                    </Listbox.Option>
-                  ))}
-                </motion.div>
-              </Listbox.Options>
-            </Listbox>
+                  koffer: e,
+                })
+              }
+              onHandgepaeckChange={(e) =>
+                setTransportInformation({
+                  ...transportInformation,
+                  handgepaeck: e,
+                })
+              }
+              onPersonenChange={(e) =>
+                setTransportInformation({
+                  ...transportInformation,
+                  personen: e,
+                })
+              }
+            />
           </div>
-          <NumberInput
-            title={t("index.wizard-koffer").toString()}
-            value={transportInformation.koffer}
-            min={0}
-            max={6}
-            onChange={(e) =>
-              setTransportInformation({
-                ...transportInformation,
-                koffer: e,
-              })
-            }
-          />
-          <NumberInput
-            title={t("index.wizard-handgepaeck").toString()}
-            value={transportInformation.handgepaeck}
-            min={0}
-            max={6}
-            onChange={(e) =>
-              setTransportInformation({
-                ...transportInformation,
-                handgepaeck: e,
-              })
-            }
-          />
-          <NumberInput
-            title={t("index.wizard-personen").toString()}
-            value={transportInformation.personen}
-            min={1}
-            max={7}
-            onChange={(e) =>
-              setTransportInformation({
-                ...transportInformation,
-                personen: e,
-              })
-            }
-          />
         </div>
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <button
@@ -335,9 +598,42 @@ const IndividuellerTransfer = ({
               </span>
             </div>
           </button>
-          <span className="text-center text-2xl">
-            {t("index.wizard-price-inquiry")}
-          </span>
+          {serviceMode === "hourly" ? (
+            hourlyCalculatedPrice ? (
+              <div className="flex flex-col text-center">
+                <span className="text-2xl font-semibold text-white">
+                  {t("index.wizard-price")}: {hourlyCalculatedPrice} €
+                </span>
+                <span className="text-xs text-neutral-300">
+                  {hourlyHours} {i18n.language === "en" ? "hrs" : "Std."} ·{" "}
+                  {i18n.language === "en" ? "incl." : "inkl."}{" "}
+                  {hourlyIncludedKm} km · {hourlyClass} (
+                  {selectedHourlyClassObj.rate} €/
+                  {i18n.language === "en" ? "hr" : "Std."})
+                </span>
+                <span className="text-xs text-neutral-400">
+                  {t("index.wizard-mwst")} ·{" "}
+                  {t("wizard-extra.hourly-extra-km-note")}
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col text-center">
+                <span className="text-2xl font-semibold text-white">
+                  {t("index.wizard-price-inquiry")}
+                </span>
+                <span className="text-xs text-neutral-300">
+                  {hourlyHours} {i18n.language === "en" ? "hrs" : "Std."} ·{" "}
+                  {i18n.language === "en" ? "incl." : "inkl."}{" "}
+                  {hourlyIncludedKm} km ·{" "}
+                  {t("wizard-extra.hourly-driver-only")}
+                </span>
+              </div>
+            )
+          ) : (
+            <span className="text-center text-2xl">
+              {t("index.wizard-price-inquiry")}
+            </span>
+          )}
           <div className="flex flex-row gap-4">
             <button
               className="flex flex-row items-center gap-4 rounded-lg bg-white/10 py-2 px-2 transition-all hover:bg-white/20"
@@ -358,13 +654,17 @@ const IndividuellerTransfer = ({
             </button>
             <button
               disabled={!getStageIsValid()}
-              className="flex items-center rounded-lg bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
+              className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
               onClick={(e) => {
+                trackWizardStep(
+                  serviceMode === "hourly" ? "hourly" : "individual",
+                  activeStep + 1
+                );
                 setActiveStep(activeStep + 1);
               }}>
-              <div className="flex flex-row items-center gap-4">
-                <span className="text-sm font-medium">
-                  {t("index.wizard-weiter").toUpperCase()}
+              <div className="flex flex-row items-center gap-3">
+                <span>
+                  {t("index.wizard-weiter")}
                 </span>
                 <BsChevronRight />
               </div>
@@ -472,26 +772,30 @@ const IndividuellerTransfer = ({
         </div>
         <div className="flex flex-row justify-between gap-8">
           <button
-            className="flex items-end rounded-lg bg-gray-600 py-2 px-4 transition-all hover:bg-gray-500"
+            className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
             onClick={(e) => {
               setActiveStep(activeStep - 1);
             }}>
-            <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row items-center gap-3">
               <BsChevronLeft />
-              <span className="text-sm font-medium">
-                {t("index.wizard-zuruck").toUpperCase()}
+              <span>
+                {t("index.wizard-zuruck")}
               </span>
             </div>
           </button>
           <button
             disabled={!getStageIsValid()}
-            className="flex items-end rounded-lg bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600"
+            className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
             onClick={(e) => {
+              trackWizardStep(
+                serviceMode === "hourly" ? "hourly" : "individual",
+                activeStep + 1
+              );
               setActiveStep(activeStep + 1);
             }}>
-            <div className="flex flex-row items-center gap-4">
-              <span className="text-sm font-medium">
-                {t("index.wizard-weiter").toUpperCase()}
+            <div className="flex flex-row items-center gap-3">
+              <span>
+                {t("index.wizard-weiter")}
               </span>
               <BsChevronRight />
             </div>
@@ -524,14 +828,16 @@ const IndividuellerTransfer = ({
                     <span className="text-sm">{personalInformation.firma}</span>
                   </div>
                 ) : null}
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-nachricht")}
-                  </span>
-                  <span className="break-all text-sm">
-                    {transportInformation.nachricht}
-                  </span>
-                </div>
+                {transportInformation.nachricht ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-bold">
+                      {t("index.wizard-nachricht")}
+                    </span>
+                    <span className="break-all text-sm">
+                      {transportInformation.nachricht}
+                    </span>
+                  </div>
+                ) : null}
               </div>
               <div className="flex flex-col gap-4">
                 <span className="font-bold">{t("index.wizard-element-2")}</span>
@@ -543,10 +849,67 @@ const IndividuellerTransfer = ({
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-bold">
+                    {t("wizard-extra.service-mode-label")}
+                  </span>
+                  <span className="text-sm">
+                    {serviceMode === "hourly"
+                      ? t("wizard-extra.mode-hourly")
+                      : serviceMode === "courier"
+                      ? t("wizard-extra.mode-courier")
+                      : t("wizard-extra.mode-point")}
+                  </span>
+                </div>
+                {serviceMode === "hourly" ? (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-bold">
+                        {t("wizard-extra.hourly-provision-label")}
+                      </span>
+                      <span className="text-sm">
+                        {hourlyProvision === "with_vehicle"
+                          ? t("wizard-extra.hourly-with-vehicle")
+                          : t("wizard-extra.hourly-driver-only")}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-bold">
+                        {t("wizard-extra.hourly-pickup-label")}
+                      </span>
+                      <span className="text-sm">{pickupLocation}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-bold">
+                        {t("wizard-extra.hourly-duration-label")}
+                      </span>
+                      <span className="text-sm">
+                        {hourlyHours} {i18n.language === "en" ? "hrs" : "Std."}{" "}
+                        · {i18n.language === "en" ? "incl." : "inkl."}{" "}
+                        {hourlyIncludedKm} km
+                      </span>
+                    </div>
+                    {hourlyCalculatedPrice ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-bold">
+                          {t("wizard-extra.hourly-calc-price")}
+                        </span>
+                        <span className="text-sm font-semibold text-[#5AC8FA]">
+                          {hourlyCalculatedPrice} € ({selectedHourlyClassObj.rate}{" "}
+                          € / {i18n.language === "en" ? "hr" : "Std."})
+                        </span>
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-bold">
                     {t("index.wizard-fahrzeuge")}
                   </span>
                   <span className="text-sm">
-                    {transportInformation.fahrzeug}
+                    {serviceMode === "hourly"
+                      ? hourlyProvision === "with_vehicle"
+                        ? hourlyClass
+                        : t("wizard-extra.hourly-driver-only")
+                      : transportInformation.fahrzeug}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -614,26 +977,62 @@ const IndividuellerTransfer = ({
             </Switch>
             <div className="flex flex-row justify-between">
               <button
-                className="flex items-center rounded-lg bg-gray-600 py-2 px-4 transition-all hover:bg-gray-500"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
                 onClick={(e) => {
                   setActiveStep(activeStep - 1);
                 }}>
-                <div className="flex flex-row items-center gap-4">
+                <div className="flex flex-row items-center gap-3">
                   <BsChevronLeft />
-                  <span className="text-sm font-medium">
-                    {t("index.wizard-zuruck").toUpperCase()}
+                  <span>
+                    {t("index.wizard-zuruck")}
                   </span>
                 </div>
               </button>
               <button
                 disabled={!datenErklaerung}
                 onClick={() => {
+                  const effectiveVehicle: FahrzeugType | null =
+                    serviceMode === "hourly"
+                      ? hourlyProvision === "with_vehicle"
+                        ? hourlyClass
+                        : "Nur Fahrer (Ihr Fahrzeug)"
+                      : transportInformation.fahrzeug;
+
+                  const notePrefix =
+                    serviceMode === "hourly"
+                      ? hourlyProvision === "with_vehicle"
+                        ? `[Stundenbuchung | Mit Fahrzeug | Startpunkt: ${pickupLocation} | Dauer: ${hourlyHours} Std. (inkl. ${hourlyIncludedKm} km) | ${hourlyClass} (${selectedHourlyClassObj.rate} €/Std.) | Kalkuliert: ${hourlyCalculatedPrice} €] `
+                        : `[Stundenbuchung | Nur Fahrer (Ihr Fahrzeug) | Startpunkt: ${pickupLocation} | Dauer: ${hourlyHours} Std. (inkl. ${hourlyIncludedKm} km) | Preis auf Anfrage] `
+                      : serviceMode === "courier"
+                      ? `[Expresskurier] `
+                      : "";
+
                   submitForm(
                     "individual",
-                    transportInformation,
+                    {
+                      ...transportInformation,
+                      fahrzeug: effectiveVehicle,
+                      nachricht: `${notePrefix}${transportInformation.nachricht}`,
+                    },
                     personalInformation,
                     i18n.language
                   );
+                  trackBookingSubmit({
+                    transferType:
+                      serviceMode === "hourly" ? "hourly" : "individual",
+                    bookingMode: `${transportInformation.art || ""} (${serviceMode}${
+                      serviceMode === "hourly"
+                        ? `:${hourlyHours}h:${hourlyProvision}`
+                        : ""
+                    })`,
+                    pickup: serviceMode === "hourly" ? pickupLocation : null,
+                    dropoff: null,
+                    roundTrip: false,
+                    vehicle: effectiveVehicle,
+                    priceEur: hourlyCalculatedPrice
+                      ? parseFloat(hourlyCalculatedPrice)
+                      : 0,
+                  });
                   setIsToastOpen(true);
                   setAbgeschickt(true);
                   setTimeout(() => {
@@ -642,9 +1041,9 @@ const IndividuellerTransfer = ({
                     setIsToastOpen(false);
                   }, 5000);
                 }}
-                className="flex items-center rounded-lg bg-blue-600 py-2 px-4 transition-all hover:bg-blue-500 disabled:bg-gray-600">
-                <span className="text-sm font-medium">
-                  {t("index.wizard-abschicken").toUpperCase()}
+                className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400">
+                <span>
+                  {t("index.wizard-abschicken")}
                 </span>
               </button>
             </div>

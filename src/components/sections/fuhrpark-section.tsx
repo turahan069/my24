@@ -1,101 +1,127 @@
+import Image from "next/image";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
+import { IoArrowForward } from "react-icons/io5";
 
 const FuhrparkSection = () => {
-  const { t } = useTranslation();
-  return (
-    <div
-      id={t("nav-fuhrpark")!}
-      className="flex w-full scroll-mt-32 flex-col items-center gap-16 p-4 lg:p-16">
-      <div className="flex w-full max-w-5xl flex-col gap-2">
-        <h3 className="text-center text-4xl lg:text-6xl">
-          <span className="font-bold text-[#2373BF]">
-            {t("index.fuhrpark-title").split(" ")[0]}
-          </span>{" "}
-          {t("index.fuhrpark-title").split(" ")[1]}{" "}
-          <span className="font-bold text-[#4CD964]">
-            {t("index.fuhrpark-title").split(" ")[2]}
-          </span>{" "}
-          {t("index.fuhrpark-title").split(" ")[3]}
-        </h3>
-        <h4 className="ml-32 text-xl">{t("index.fuhrpark-beschreibung")}</h4>
-      </div>
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === "en";
+  const bookHref = `#${t("nav-buchen")}`;
 
-      <div className="flex flex-col gap-16">
-        <div className="grid grid-cols-1 gap-32 lg:grid-cols-2">
-          <div className="flex max-w-lg flex-col gap-4">
-            <div className="relative">
-              <div className="absolute -top-2.5 -left-2.5 -z-10 h-32 w-48 bg-[#5AC8FA]"></div>
-              <div className="overflow-hidden lg:h-80 lg:w-96">
-                <img
-                  src="img/Fuhrpark_E_Klasse_Kombi.jpg"
-                  alt="E Klasse Kombi"></img>
-              </div>
+  return (
+    <section
+      id={t("nav-fuhrpark")!}
+      className="w-full scroll-mt-24 border-b border-white/10 bg-[#0B0D12] px-4 py-14 text-white sm:px-6 lg:px-8 lg:py-20"
+    >
+      <div className="mx-auto flex max-w-6xl flex-col gap-12">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5AC8FA]">
+            {isEn ? "OUR MERCEDES FLEET" : "UNSER FUHRPARK"}
+          </p>
+          <h3 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+            {t("index.fuhrpark-title")}
+          </h3>
+          <p className="mt-3 text-base text-neutral-300 sm:text-lg">
+            {t("index.fuhrpark-beschreibung")}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* E-Klasse Kombi */}
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#151924]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#0E1118]">
+              <Image
+                src="/img/Fuhrpark_E_Klasse_Kombi.jpg"
+                alt="Mercedes-Benz E-Klasse Kombi"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover object-center"
+              />
             </div>
-            <div className="flex flex-col gap-4">
-              <h6>{t("index.e-klasse-kombi-header")}</h6>
-              <div>
-                <h4 className="inline-block bg-gradient-to-r from-[#2BA2B3] via-[#6794E5] to-[#F0A3CE] bg-clip-text text-4xl font-extrabold text-transparent">
-                  {t("index.e-klasse-kombi-titel")}
-                </h4>
-              </div>
-              <p>{t("index.e-klasse-kombi-beschreibung")}</p>
+            <div className="flex flex-1 flex-col p-6">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                {t("index.e-klasse-kombi-header")}
+              </span>
+              <h4 className="mt-1 text-2xl font-bold tracking-tight text-white">
+                {t("index.e-klasse-kombi-titel")}
+              </h4>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-300">
+                {t("index.e-klasse-kombi-beschreibung")}
+              </p>
               <a
-                href={`#${t("nav-buchen")}`}
-                className="font-bold leading-loose text-[#256BCC] underline underline-offset-8">
-                {t("index.e-klasse-kombi-cta")}
+                href={bookHref}
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#0071E3] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]"
+              >
+                <span>{isEn ? "Book Transfer" : "Jetzt buchen"}</span>
+                <IoArrowForward className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
           </div>
-          <div className="mt-16 flex max-w-lg flex-col gap-4 lg:row-span-2">
-            <div className="relative">
-              <div className="absolute -right-2.5 -bottom-2.5 -z-10 h-32 w-48 bg-[#5AC8FA]"></div>
-              <div className="h-full overflow-hidden">
-                <img src="img/Fuhrpark_E_Klasse.jpg" alt="E Klasse"></img>
-              </div>
+
+          {/* E-Klasse Limousine */}
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#151924]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#0E1118]">
+              <Image
+                src="/img/Fuhrpark_E_Klasse.jpg"
+                alt="Mercedes-Benz E-Klasse Limousine"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover object-[50%_62%]"
+              />
             </div>
-            <div className="flex flex-col gap-4">
-              <h6>{t("index.e-klasse-header")}</h6>
-              <div>
-                <h4 className="inline-block bg-gradient-to-r from-[#2BA2B3] via-[#6794E5] to-[#F0A3CE] bg-clip-text text-4xl font-extrabold text-transparent">
-                  {t("index.e-klasse-titel")}
-                </h4>
-              </div>
-              <p>{t("index.e-klasse-beschreibung")}</p>
-              <a
-                href={`/FAQ`}
-                className="font-bold leading-loose text-[#256BCC] underline underline-offset-8">
-                {t("index.e-klasse-cta")}
-              </a>
+            <div className="flex flex-1 flex-col p-6">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                {t("index.e-klasse-header")}
+              </span>
+              <h4 className="mt-1 text-2xl font-bold tracking-tight text-white">
+                {t("index.e-klasse-titel")}
+              </h4>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-300">
+                {t("index.e-klasse-beschreibung")}
+              </p>
+              <Link
+                href="/FAQ"
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]"
+              >
+                <span>{isEn ? "Read FAQ" : "Häufige Fragen"}</span>
+                <IoArrowForward className="h-4 w-4" aria-hidden="true" />
+              </Link>
             </div>
           </div>
-          <div className="flex max-w-lg flex-col gap-4">
-            <div className="relative">
-              <div className="absolute -bottom-2.5 -left-2.5 -z-10 h-32 w-48 bg-[#5AC8FA]"></div>
-              <div className="relative h-full overflow-hidden">
-                <img
-                  src="img/Fuhrpark_V_Klasse.jpg"
-                  className="object-cover"
-                  alt="V Klasse"></img>
-              </div>
+
+          {/* V-Klasse */}
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#151924]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#0E1118]">
+              <Image
+                src="/img/Fuhrpark_V_Klasse.jpg"
+                alt="Mercedes-Benz V-Klasse"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover object-[50%_65%]"
+              />
             </div>
-            <div className="flex flex-col gap-4">
-              <h6>{t("index.v-klasse-header")}</h6>
-              <div>
-                <h4 className="inline-block bg-gradient-to-r from-[#2BA2B3] via-[#6794E5] to-[#F0A3CE] bg-clip-text text-4xl font-extrabold text-transparent">
-                  {t("index.v-klasse-titel")}
-                </h4>
-              </div>
-              <p>{t("index.v-klasse-beschreibung")}</p>
+            <div className="flex flex-1 flex-col p-6">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                {t("index.v-klasse-header")}
+              </span>
+              <h4 className="mt-1 text-2xl font-bold tracking-tight text-white">
+                {t("index.v-klasse-titel")}
+              </h4>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-300">
+                {t("index.v-klasse-beschreibung")}
+              </p>
               <a
-                href={`#${t("nav-buchen")}`}
-                className="font-bold leading-loose text-[#256BCC] underline underline-offset-8">
-                {t("index.v-klasse-cta")}
+                href={bookHref}
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#0071E3] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]"
+              >
+                <span>{isEn ? "Book V-Class" : "V-Klasse buchen"}</span>
+                <IoArrowForward className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

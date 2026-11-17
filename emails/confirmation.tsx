@@ -31,8 +31,8 @@ const ConfirmationEmail = ({ name, language }: ConfirmationEmailProps) => {
                   Stunden nur verbindlich per Telefon bestätigen können.
                 </div>
                 <div>
-                  Rufen Sie uns einfach an unter<Link href="tel: +496172923232">&nbsp;+49 6172 92 32 32</Link> 
-                  &nbsp;oder <Link href="tel: +491607113183"> +49 160 711 31 83</Link>.
+                  Rufen Sie uns einfach an unter<Link href="tel:+496172923232">&nbsp;+49 6172 92 32 32</Link> 
+                  &nbsp;oder <Link href="tel:+491607113183"> +49 160 711 31 83</Link>.
                 </div>
               </div>
               <div className="mt-4">Mit freundlichen Grüßen</div>
@@ -41,10 +41,10 @@ const ConfirmationEmail = ({ name, language }: ConfirmationEmailProps) => {
                 <div>Max-Planck-Straße 16</div>
                 <div>61381 Friedrichsdorf</div>
                 <div>
-                  T: <Link href="tel: +496172923232">+49 6172 92 32 32</Link>
+                  T: <Link href="tel:+496172923232">+49 6172 92 32 32</Link>
                 </div>
                 <div>
-                  M: <Link href="tel: +491607113183">+49 160 711 31 83</Link>
+                  M: <Link href="tel:+491607113183">+49 160 711 31 83</Link>
                 </div>
                 <div>
                   W:{" "}
@@ -107,8 +107,8 @@ const ConfirmationEmail = ({ name, language }: ConfirmationEmailProps) => {
                 Please note that we can confirm short-term bookings under 12
                 hours only by phone.
               </div>
-              <div>Simply call us at <Link href="tel: +496172923232">+49 6172 92 32 32</Link> 
-                  or <Link href="tel: +491607113183">+49 160 711 31 83</Link> </div>
+              <div>Simply call us at <Link href="tel:+496172923232">+49 6172 92 32 32</Link> 
+                  or <Link href="tel:+491607113183">+49 160 711 31 83</Link> </div>
             </div>
             <div className="mt-4">Best Regards,</div>
             <div className="mt-4">
@@ -116,10 +116,10 @@ const ConfirmationEmail = ({ name, language }: ConfirmationEmailProps) => {
               <div>Max-Planck-Straße 16</div>
               <div>61381 Friedrichsdorf</div>
               <div>
-                T: <Link href="tel: +496172923232">+49 6172 92 32 32</Link>
+                T: <Link href="tel:+496172923232">+49 6172 92 32 32</Link>
               </div>
               <div>
-                M: <Link href="tel: +491607113183">+49 160 711 31 83</Link>
+                M: <Link href="tel:+491607113183">+49 160 711 31 83</Link>
               </div>
               <div>
                 W:{" "}
