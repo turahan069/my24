@@ -120,15 +120,15 @@ const CITIES_BASE: CityEntry[] = [
     image: {
       slug: "bad-homburg",
       localPath: "/img/cities/bad-homburg.jpg",
-      commonsFile: "File:Bad Homburg Kurhaus Kurparkseite.JPG",
+      commonsFile: "File:Bad-homburg-kurpark-kaiser-wilhelms-bad-003.jpg",
       commonsUrl:
-        "https://commons.wikimedia.org/wiki/File:Bad_Homburg_Kurhaus_Kurparkseite.JPG",
-      titleDe: "Kurhaus Bad Homburg am historischen Kurpark",
-      titleEn: "Kurhaus Bad Homburg overlooking the historic Kurpark",
+        "https://commons.wikimedia.org/wiki/File:Bad-homburg-kurpark-kaiser-wilhelms-bad-003.jpg",
+      titleDe: "Kaiser-Wilhelms-Bad im Kurpark Bad Homburg",
+      titleEn: "Kaiser-Wilhelms-Bad in the Bad Homburg Spa Park",
       altDe:
-        "Kurhaus Bad Homburg vor der Höhe an der Kurparkseite – Wahrzeichen der Kurstadt im Taunus",
+        "Kaiser-Wilhelms-Bad im Kurpark Bad Homburg vor der Höhe mit Statue von Kaiser Wilhelm I.",
       altEn:
-        "Kurhaus Bad Homburg viewed from the spa park – landmark of the Taunus spa town",
+        "Kaiser-Wilhelms-Bad bathhouse in Bad Homburg Kurpark with Emperor Wilhelm I statue",
     },
     seo: {
       titleDe:
@@ -635,7 +635,7 @@ const CITIES_BASE: CityEntry[] = [
       headingEn: "Oberursel: Timber-Framed Old Town & Gateway to the Großer Feldberg",
       paragraphsDe: [
         "Mit rund 46.750 Einwohnern ist Oberursel die zweitgrößte Stadt des Hochtaunuskreises und besticht durch seine liebevoll erhaltene Altstadt rund um das Alte Rathaus von 1658, historische Fachwerkhäuser und den traditionellen Werkgraben. Im Nordwesten markiert die Hohemark – zugleich Endpunkt der Frankfurter U-Bahn-Linie U3 – das klassische Tor hoch zum Großen Feldberg.",
-        "Durch internationale Schulen, zahlreiche mittelständische und große Unternehmen sowie lebendige Ortsteile wie Oberstedten, Bommersheim, Stierstadt und Weißkirchen ist die Nachfrage nach pünktlichen Transfers zum Flughafen Frankfurt hier besonders hoch – rund um die Uhr, auch für Gruppen bis 7 Personen in der V-Klasse.",
+        "Durch internationale Schulen, zahlreiche mittelständische und große Unternehmen sowie lebendige Ortsteile wie Oberstedten, Bommersheim, Stierstadt und Weißkirchen ist die Nachfrage nach pünktlichen Transfers zum Flughafen Frankfurt hier besonders hoch – rund um die Uhr, auch für Gruppen bis 6 Fahrgäste in der V-Klasse.",
       ],
       paragraphsEn: [
         "With roughly 46,750 residents, Oberursel is the second-largest town in the Hochtaunus district, celebrated for its well-preserved Old Town around the 1658 Old Town Hall, timber-framed facades, and the historic mill stream (Werkgraben). At Hohemark, where the U3 line ends, trails lead right up toward the Großer Feldberg.",
@@ -873,11 +873,11 @@ const CITIES_BASE: CityEntry[] = [
       headingEn: "Usingen: Former Princely Residence & Hub of the Usinger Land",
       paragraphsDe: [
         "Usingen blickt auf eine stolze Geschichte als barocke Residenzstadt des Hauses Nassau-Usingen zurück und trägt im Volksmund den Beinamen „Buchfinkenstadt“. Das markante Usinger Schloss aus dem 17. und 18. Jahrhundert – nach dem Stadtbrand von 1873 umgebaut und heute Heimat der Christian-Wirth-Schule – prägt gemeinsam mit der Hugenottenkirche, dem Prinzenpalais und dem Schlosspark das historische Zentrum.",
-        "Als Mittelzentrum im nördlichen Hochtaunuskreis kreuzen sich in Usingen die Bundesstraßen B275 und B456, während die Taunusbahn den Schienenverkehr Richtung Rhein-Main bedient. Da unsere Flotte seit über einem Jahrzehnt im Usinger Land zu Hause ist, kennen unsere Fahrer jede Strecke über den Taunuskamm genau – ideal für pünktliche Geschäfts-, Klinik- und Urlaubsreisen.",
+        "Als Mittelzentrum im nördlichen Hochtaunuskreis kreuzen sich in Usingen die Bundesstraßen B275 und B456, während die Taunusbahn den Schienenverkehr Richtung Rhein-Main bedient. Da unsere Flotte seit über 15 Jahren im Usinger Land zu Hause ist, kennen unsere Fahrer jede Strecke über den Taunuskamm genau – ideal für pünktliche Geschäfts-, Klinik- und Urlaubsreisen.",
       ],
       paragraphsEn: [
         "Usingen is the historic seat of the House of Nassau-Usingen and is affectionately nicknamed 'Buchfinkenstadt'. Its landmark 17th/18th-century Usingen Palace—today housing the Christian-Wirth-Schule alongside the scenic Schlossgarten—anchors the Baroque old town.",
-        "Where federal highways B275 and B456 cross, Usingen serves as the central hub of the northern Hochtaunus district. Having served the Usinger Land for over a decade, we combine local route mastery with guaranteed fixed fares to Frankfurt Airport and the main rail stations.",
+        "Where federal highways B275 and B456 cross, Usingen serves as the central hub of the northern Hochtaunus district. Having served the Usinger Land for over 15 years, we combine local route mastery with guaranteed fixed fares to Frankfurt Airport and the main rail stations.",
       ],
     },
     highlights: {
@@ -1388,10 +1388,10 @@ const CITIES_BASE: CityEntry[] = [
         aEn: "A transfer from Karben to Frankfurt Central Station is €70 fixed price, and €73 to Frankfurt South Station.",
       },
       {
-        qDe: "Können auch bis zu 7 Personen gemeinsam ab Karben fahren?",
-        qEn: "Can up to 7 passengers travel together from Karben?",
-        aDe: "Ja, mit unserer Mercedes V-Klasse (Großraum-Limousine) befördern wir bequem größere Familien oder Reisegruppen bis 7 Personen samt Koffern.",
-        aEn: "Yes, our Mercedes V-Class comfortably accommodates families and groups of up to 7 passengers plus suitcases.",
+        qDe: "Können auch bis zu 6 Personen gemeinsam ab Karben fahren?",
+        qEn: "Can up to 6 passengers travel together from Karben?",
+        aDe: "Ja, mit unserer Mercedes V-Klasse (Großraum-Limousine) befördern wir bequem größere Familien oder Reisegruppen bis 6 Fahrgäste samt Koffern.",
+        aEn: "Yes, our Mercedes V-Class comfortably accommodates families and groups of up to 6 passengers plus suitcases.",
       },
     ],
     nearbySlugs: ["nieder-erlenbach-frankfurt", "harheim-frankfurt", "rosbach-rodheim", "nieder-eschbach-frankfurt"],
@@ -2095,6 +2095,869 @@ const CITIES_BASE: CityEntry[] = [
       },
     ],
     nearbySlugs: ["nieder-eschbach-frankfurt", "harheim-frankfurt", "karben", "bad-homburg"],
+  },
+  {
+    slug: "kronberg-taunus",
+    name: "Kronberg im Taunus",
+    displayName: "Kronberg im Taunus",
+    shortName: "Kronberg",
+    category: "hochtaunus",
+    regionDe: "Hochtaunuskreis · Burg- & Villenstadt",
+    regionEn: "Hochtaunus District · Castle & Villa Town",
+    postalCodes: ["61476"],
+    population: "ca. 18.550",
+    coordinates: { lat: 50.1797, lng: 8.5086 },
+    distanceAirportKm: 26,
+    driveTimeMin: "22–28 Min.",
+    highwayRouteDe: "Direkt über die B455 oder L3005 auf die A66, am Westkreuz / Wiesbadener Kreuz zügig zum Flughafen Terminal 1 & 3.",
+    highwayRouteEn: "Straight down B455 or L3005 to the A66 motorway and onward via Westkreuz/Mönchhof to Terminal 1 or 3.",
+    transitInfo: {
+      lines: "S-Bahn S4 (ab Kronberg Bahnhof) mit Umstieg am Frankfurter Hbf in S8/S9",
+      comparisonDe:
+        "Mit der S4 und Umstieg am Hauptbahnhof benötigen Sie rund 45–50 Minuten bis zum Flughafen – gerade in Schönberg und Oberhöchstadt kommen weite Anfahrten zum Bahnhof hinzu. Wir holen Sie für 60 € direkt vor der Haustür ab.",
+      comparisonEn:
+        "Via S4 and a transfer at Frankfurt Central Station the journey takes 45–50 minutes plus the walk/bus from Schönberg or Oberhöchstadt. Our chauffeur collects you right at home for €60.",
+    },
+    image: {
+      slug: "kronberg-taunus",
+      localPath: "/img/cities/kronberg-taunus.jpg",
+      commonsFile: "File:Friedrichshof Castle, Kronberg im Taunus (P1090559).jpg",
+      commonsUrl:
+        "https://commons.wikimedia.org/wiki/File:Friedrichshof_Castle,_Kronberg_im_Taunus_(P1090559).jpg",
+      titleDe: "Schloss Friedrichshof (Schlosshotel) in Kronberg im Taunus",
+      titleEn: "Schloss Friedrichshof in Kronberg im Taunus",
+      altDe: "Luftansicht von Schloss Friedrichshof im grünen Schlosspark in Kronberg im Taunus",
+      altEn: "Aerial view of Schloss Friedrichshof set in its wooded park in Kronberg im Taunus",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Kronberg im Taunus → Frankfurt (FRA) ab 60 €",
+      titleEn: "Airport Transfer Kronberg im Taunus ↔ Frankfurt (FRA) €60",
+      descriptionDe:
+        "Flughafentransfer Kronberg im Taunus (Altstadt, Schönberg, Oberhöchstadt) nach Frankfurt Airport (FRA) für 60 € Festpreis. 24/7 Chauffeur & Limousine.",
+      descriptionEn:
+        "Private 24/7 airport transfer between Kronberg im Taunus (Schönberg, Oberhöchstadt, Schlosshotel) and Frankfurt Airport (FRA) for €60 fixed fare.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Kronberg im Taunus – Direkt zum Festpreis nach Frankfurt (FRA)",
+      h1En: "Kronberg im Taunus Airport Transfer – Direct Fixed-Fare Service to FRA",
+      subtitleDe: "Villenstadt-Komfort trifft 24/7 Business- & Privatchauffeur",
+      subtitleEn: "24/7 Chauffeur & Limousine Transfers from Kronberg to FRA",
+      introDe:
+        "Ob Abholung am Schlosshotel Kronberg, bei einem internationalen Arbeitgeber wie Accenture oder P&G, in Schönberg oder Oberhöchstadt: Unser Chauffeurservice bringt Sie für 60 € Festpreis ohne Umwege direkt ans Terminal.",
+      introEn:
+        "Whether departing from Schlosshotel Kronberg, global campuses such as Accenture or P&G, Schönberg, or Oberhöchstadt, we take you nonstop to Terminal 1 or 3 for a €60 fixed fare.",
+    },
+    portrait: {
+      headingDe: "Was Kronberg im Taunus prägt – Burg, Schlosshotel & Wirtschaftsstandort",
+      headingEn: "Kronberg im Taunus: Historic Castle, Parks & Executive Hub",
+      paragraphsDe: [
+        "Eingebettet in die bewaldeten Südhänge des Vordertaunus zählt Kronberg im Taunus mit der malerischen Fachwerk-Altstadt, der mittelalterlichen Burg Kronberg, dem Opel-Zoo und Schloss Friedrichshof zu den traditionsreichsten Wohn- und Ausflugszielen rund um Frankfurt.",
+        "Gleichzeitig zieht Kronberg rund um den Campus Kronberg zahlreiche Geschäftsreisende und internationale Beratungsunternehmen an. Unsere gepflegten Mercedes-Limousinen bieten dafür die ruhige, repräsentative Verbindung zu Flughafen Frankfurt (22–28 Min.) sowie Haupt- und Südbahnhof.",
+      ],
+      paragraphsEn: [
+        "Set along the wooded southern slopes of the Taunus ridge, Kronberg im Taunus pairs a preserved half-timbered old town and medieval Kronberg Castle with the renowned Opel Zoo and historic Schloss Friedrichshof.",
+        "It is equally home to major international consultancies and headquarters, creating steady executive travel demand. Our Mercedes sedans and V-Class vans connect Kronberg to FRA in 22–28 minutes at fixed fares.",
+      ],
+    },
+    highlights: {
+      headingDe: "Wichtige Abholorte & Stadtteile in Kronberg",
+      headingEn: "Key Pick-up Areas & Landmarks in Kronberg",
+      items: [
+        {
+          nameDe: "Schlosshotel Kronberg & Burgviertel",
+          nameEn: "Schlosshotel Kronberg & Old Town",
+          descDe: "Diskrete Vorfahrt direkt am Hoteleingang, an der Burg Kronberg und im historischen Stadtkern.",
+          descEn: "Discreet hotel and castle-quarter pick-ups straight at your reception or driveway.",
+        },
+        {
+          nameDe: "Campus Kronberg & Gewerbestandorte",
+          nameEn: "Campus Kronberg & Corporate Offices",
+          descDe: "Zuverlässige Business-Transfers für Berater, Führungskräfte und Gäste von Accenture, Braun/P&G & Co.",
+          descEn: "Reliable executive transfers for consultants, guests, and staff across Campus Kronberg.",
+        },
+        {
+          nameDe: "Schönberg & Oberhöchstadt",
+          nameEn: "Schönberg & Oberhöchstadt",
+          descDe: "Sämtliche Wohngebiete inklusive Victoriapark und Höhenlagen zum selben 60 € Festpreis.",
+          descEn: "All hillside residential districts included within the same €60 fixed rate.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Bei früher Anfahrt über die B455 Richtung Eschborner Dreieck nutzen unsere Fahrer bei Bedarf Ausweichrouten über Bad Soden oder Oberursel, damit Sie stressfrei einchecken.",
+    pickupTipEn:
+      "During weekday rush hours on the B455 towards Eschborn Junction, our drivers monitor A66 traffic live and use smooth local bypasses when needed.",
+    faqs: [
+      {
+        qDe: "Was kostet der Flughafentransfer von Kronberg im Taunus zum Flughafen Frankfurt?",
+        qEn: "How much does an airport transfer from Kronberg to Frankfurt Airport cost?",
+        aDe: "Eine direkte Fahrt ab Kronberg (inkl. Schönberg und Oberhöchstadt) kostet mit unserer Business Limousine 60 € Festpreis inkl. MwSt., zum Hauptbahnhof 55 € und zum Südbahnhof 58 €.",
+        aEn: "A direct private transfer from anywhere in Kronberg costs €60 fixed price incl. VAT to Frankfurt Airport (€55 to Central Station, €58 to South Station).",
+      },
+      {
+        qDe: "Holen Sie auch am Schlosshotel Kronberg oder direkt am Campus ab?",
+        qEn: "Do you pick up guests directly at Schlosshotel Kronberg or corporate offices?",
+        aDe: "Ja, selbstverständlich – unsere Chauffeure melden sich auf Wunsch am Empfang an und helfen direkt beim Gepäck.",
+        aEn: "Yes—our chauffeurs meet guests directly at hotel reception or corporate lobbies and assist with luggage.",
+      },
+      {
+        qDe: "Sind Nacht- oder Wochenendzuschläge im Festpreis enthalten?",
+        qEn: "Are night or weekend surcharges added to the fixed fare?",
+        aDe: "Nein, der ausgewiesene Festpreis von 60 € gilt transparent rund um die Uhr – ohne versteckte Nacht- oder Treibstoffzuschläge.",
+        aEn: "No—the €60 fixed fare applies transparently 24/7 with no hidden night or fuel surcharges.",
+      },
+    ],
+    nearbySlugs: ["koenigstein-taunus", "oberursel", "steinbach-taunus", "eschborn"],
+  },
+  {
+    slug: "koenigstein-taunus",
+    name: "Königstein im Taunus",
+    displayName: "Königstein im Taunus",
+    shortName: "Königstein",
+    category: "hochtaunus",
+    regionDe: "Hochtaunuskreis · Heilklimatischer Kurort",
+    regionEn: "Hochtaunus District · Climatic Health Resort",
+    postalCodes: ["61462"],
+    population: "ca. 16.600",
+    coordinates: { lat: 50.1831, lng: 8.4633 },
+    distanceAirportKm: 29,
+    driveTimeMin: "25–32 Min.",
+    highwayRouteDe: "Über die B8 / K801 Richtung Kelkheim-Mitte oder Kronberg schnell auf die A66 und A3 zum Flughafen Frankfurt.",
+    highwayRouteEn: "Via B8 toward Kelkheim/Bad Soden directly onto the A66 and A3 straight into Frankfurt Airport Terminals 1 & 3.",
+    transitInfo: {
+      lines: "Taunusbahn RB 12 (ab Königstein) / Bus 253 bis Frankfurt-Höchst bzw. Kronberg",
+      comparisonDe:
+        "Mit Regionalbahn RB12 oder Bus und Umstieg in die S-Bahn brauchen Reisende meist 55–65 Minuten. Ab Haustür in Falkenstein, Schneidhain oder Mammolshain fährt Sie unser Chauffeur in rund 25–32 Minuten für 65 € direkt bis vor das Abfluggate.",
+      comparisonEn:
+        "Public transit via RB12 or regional buses and S-Bahn transfers typically takes 55–65 minutes. Our door-to-terminal transfer brings you from Falkenstein, Schneidhain, or Mammolshain in roughly 25–32 minutes for €65.",
+    },
+    image: {
+      slug: "koenigstein-taunus",
+      localPath: "/img/cities/koenigstein-taunus.jpg",
+      commonsFile: "File:Burg Königstein im Taunus.jpg",
+      commonsUrl: "https://commons.wikimedia.org/wiki/File:Burg_K%C3%B6nigstein_im_Taunus.jpg",
+      titleDe: "Burgruine Königstein im Taunus",
+      titleEn: "Königstein Castle ruins in the Taunus",
+      altDe: "Historische Burganlage und Bergfried von Burg Königstein im Taunus",
+      altEn: "Historic stone walls and tower of Königstein Castle overlooking the Taunus",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Königstein im Taunus → Frankfurt (FRA) ab 65 €",
+      titleEn: "Airport Transfer Königstein im Taunus ↔ Frankfurt (FRA) €65",
+      descriptionDe:
+        "24/7 Flughafentransfer Königstein im Taunus (Falkenstein, Mammolshain, Schneidhain) nach Frankfurt (FRA) für 65 € Festpreis. Limousine & Großraum-Van.",
+      descriptionEn:
+        "Private 24/7 airport transfer from Königstein im Taunus (Falkenstein, Mammolshain, Schneidhain) to Frankfurt Airport (FRA) for €65 fixed fare.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Königstein im Taunus – Komfortabel & direkt zum FRA",
+      h1En: "Königstein im Taunus Airport Transfer – Direct Fixed Fare to Frankfurt (FRA)",
+      subtitleDe: "Von Falkenstein und dem Kurpark rund um die Uhr ans Terminal",
+      subtitleEn: "Round-the-Clock Chauffeur Transfers from Königstein to FRA",
+      introDe:
+        "Aus dem heilklimatischen Kurort Königstein inklusive Falkenstein, Mammolshain und Schneidhain starten Sie zum garantierten Festpreis von 65 € direkt zum Flughafen Frankfurt – ideal für Klinikbesucher, Geschäftsreisende und Familien.",
+      introEn:
+        "Departing from the spa resort of Königstein—including Falkenstein, Mammolshain, and Schneidhain—we provide €65 fixed-price door-to-terminal service to Frankfurt Airport, available day and night.",
+    },
+    portrait: {
+      headingDe: "Königstein im Taunus – Burgruine, Kurtradition & Höhenlagen",
+      headingEn: "Königstein im Taunus: Castle Heights, Clinics & Hotels",
+      paragraphsDe: [
+        "Bekannt als heilklimatischer Kurort unterhalb von Großem und Kleinem Feldberg beeindruckt Königstein im Taunus mit der mächtigen Burgruine Königstein, eleganten Parkhotels, renommierten Fachkliniken sowie dem weitläufigen Woogtal.",
+        "Durch steile Hanglagen in Falkenstein und teils verwinkelte Anfahrten im oberen Taunus ist ein pünktlicher Tür-zu-Tür-Chauffeurservice mit viel Kofferraumvolumen für viele Anwohner und Hotelgäste der komfortabelste Weg nach Frankfurt.",
+      ],
+      paragraphsEn: [
+        "Recognized for centuries as an upscale climatic health resort beneath the Feldberg peaks, Königstein im Taunus combines one of Germany's largest hillside castle ruins with refined spa hotels, specialist clinics, and villa estates.",
+        "Given the hilly topography of Falkenstein and Mammolshain, a punctual door-to-door chauffeur with spacious luggage capacity offers effortless convenience for residents and visitors alike.",
+      ],
+    },
+    highlights: {
+      headingDe: "Bekannte Abholpunkte in Königstein & Umgebung",
+      headingEn: "Popular Pick-up Spots in Königstein",
+      items: [
+        {
+          nameDe: "Villa Rothschild, Falkenstein Grand & Innenstadt",
+          nameEn: "Falkenstein Grand, Villa Rothschild & Center",
+          descDe: "Repräsentative Abholungen an Top-Hotels, Privatkliniken und im Bereich Burg / Kurbad.",
+          descEn: "Discreet executive pick-ups at Königstein's premier hotels, clinics, and castle quarter.",
+        },
+        {
+          nameDe: "Falkenstein, Mammolshain & Schneidhain",
+          nameEn: "Falkenstein, Mammolshain & Schneidhain",
+          descDe: "Alle Ortsteile fahren zum einheitlichen 65 € Flughafentarif ohne Berg- oder Anfahrtszuschlag.",
+          descEn: "All Königstein neighborhoods covered by the unified €65 airport rate without surcharge.",
+        },
+        {
+          nameDe: "Großraum-Vans für Familien & Gepäck",
+          nameEn: "Mercedes V-Class for Families & Luggage",
+          descDe: "Bis zu 6 Fahrgäste plus Ski-, Golf- oder Urlaubsgepäck bequem in einem Fahrzeug.",
+          descEn: "Spacious Mercedes V-Class seating up to 6 passengers plus golf bags or large suitcases.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Bei Abholungen in höheren Lagen wie Falkenstein oder bei frühem Nebel im Taunus planen wir ausreichend Anfahrtszeit ein, sodass Ihr Fahrer pünktlich vor der Tür steht.",
+    pickupTipEn:
+      "For elevated addresses in Falkenstein or crisp early-morning departures, we dispatch with ample buffer time so your vehicle arrives right on schedule.",
+    faqs: [
+      {
+        qDe: "Wie hoch ist der Festpreis von Königstein im Taunus zum Flughafen Frankfurt?",
+        qEn: "What is the fixed fare from Königstein to Frankfurt Airport?",
+        aDe: "Eine Fahrt ab Königstein, Falkenstein, Mammolshain oder Schneidhain kostet mit der Business Limousine 65 € Festpreis zum Flughafen Frankfurt (60 € Hauptbahnhof, 63 € Südbahnhof).",
+        aEn: "A private Business Sedan ride from any part of Königstein costs €65 fixed fare to Frankfurt Airport (€60 to Central Station, €63 to South Station).",
+      },
+      {
+        qDe: "Kann ich für die Rückkehr auch direkt meinen Rückflug buchen?",
+        qEn: "Can I pre-book my return pick-up from Frankfurt Airport?",
+        aDe: "Ja, im Buchungsformular aktivieren Sie einfach 'Hin- & Rückreise'. Anhand Ihrer Flugnummer passen wir uns automatisch Verspätungen an.",
+        aEn: "Yes—toggle 'Return flight' in our form and provide your flight number so we track your landing automatically.",
+      },
+      {
+        qDe: "Bieten Sie von Königstein auch Kranken- oder Klinikfahrten nach Frankfurt an?",
+        qEn: "Do you also provide clinic or medical appointment transfers from Königstein?",
+        aDe: "Ja, neben Flughafentransfers übernehmen wir auch bequeme sitzende Klinik- und Krankenfahrten (Privat/Selbstzahler oder mit Transportschein nach Absprache).",
+        aEn: "Yes—in addition to airport rides, we handle comfortable seated medical and clinic transfers across the Rhine-Main region.",
+      },
+    ],
+    nearbySlugs: ["kronberg-taunus", "oberursel", "schmitten-taunus", "bad-homburg"],
+  },
+  {
+    slug: "steinbach-taunus",
+    name: "Steinbach (Taunus)",
+    displayName: "Steinbach (Taunus)",
+    shortName: "Steinbach",
+    category: "hochtaunus",
+    regionDe: "Hochtaunuskreis · Direkt am Vordertaunus",
+    regionEn: "Hochtaunus District · Central Vordertaunus",
+    postalCodes: ["61449"],
+    population: "ca. 10.800",
+    coordinates: { lat: 50.1678, lng: 8.5719 },
+    distanceAirportKm: 23,
+    driveTimeMin: "20–25 Min.",
+    highwayRouteDe: "Über das Gewerbegebiet Steinbach/Eschborn bzw. L3005 direkt auf die A661/A5/A66 an Terminal 1 und 3.",
+    highwayRouteEn: "Via L3005 and Eschborn junction straight onto A66/A5 toward Terminal 1 and 3.",
+    transitInfo: {
+      lines: "S-Bahn S5 (Bahnhof Steinbach/Weißkirchen) mit Umstieg in Frankfurt West/Hbf",
+      comparisonDe:
+        "Da der Bahnhof Weißkirchen/Steinbach am östlichen Ortsrand liegt und die S5 Umstiege erfordert, sind ÖPNV-Reisende oft 35–45 Minuten unterwegs. Unser Chauffeur startet ab Haustür in 20–25 Minuten direkt zum Terminal.",
+      comparisonEn:
+        "With Weißkirchen/Steinbach station at the edge of town and an S-Bahn transfer in Frankfurt, public transit takes 35–45 minutes. By car we reach FRA in 20–25 minutes door-to-terminal.",
+    },
+    image: {
+      slug: "steinbach-taunus",
+      localPath: "/img/cities/steinbach-taunus.jpg",
+      commonsFile: "File:Steinbach, Schultheißenamt.JPG",
+      commonsUrl: "https://commons.wikimedia.org/wiki/File:Steinbach,_Schulthei%C3%9Fenamt.JPG",
+      titleDe: "Historisches Schultheißenamt in Steinbach (Taunus)",
+      titleEn: "Historic Schultheißenamt in Steinbach (Taunus)",
+      altDe: "Historisches Verwaltungsgebäude Schultheißenamt im Ortskern von Steinbach (Taunus)",
+      altEn: "Historic Schultheißenamt landmark building in central Steinbach (Taunus)",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Steinbach (Taunus) → Frankfurt (FRA) ab 55 €",
+      titleEn: "Airport Transfer Steinbach (Taunus) ↔ Frankfurt (FRA) €55",
+      descriptionDe:
+        "Zuverlässiger Flughafentransfer ab Steinbach (Taunus) zum Flughafen Frankfurt (FRA) für 55 € Festpreis – 24/7 Abholung vor der Haustür.",
+      descriptionEn:
+        "Direct 24/7 airport transfer from Steinbach (Taunus) to Frankfurt Airport (FRA) for €55 fixed price—Mercedes sedans & V-Class vans.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Steinbach (Taunus) – In ca. 20 Minuten zum Flughafen",
+      h1En: "Steinbach (Taunus) Airport Transfer – Direct Fixed Fare to FRA",
+      subtitleDe: "Zwischen Oberursel, Kronberg und Frankfurt – direkt & zum Festpreis",
+      subtitleEn: "Door-to-Terminal Chauffeur Service from Steinbach",
+      introDe:
+        "Zentral zwischen Oberursel, Kronberg und dem Frankfurter Nordwesten gelegen, erreichen wir jede Adresse in Steinbach (Taunus) in wenigen Minuten – und bringen Sie für 55 € Festpreis stressfrei zum Flug.",
+      introEn:
+        "Tucked right between Oberursel, Kronberg, and northwest Frankfurt, Steinbach (Taunus) enjoys rapid motorway access—our drivers bring you straight to FRA for €55 fixed fare.",
+    },
+    portrait: {
+      headingDe: "Steinbach (Taunus) – Historisches Ortsbild in direkter Nähe zu Frankfurt",
+      headingEn: "Steinbach (Taunus): Compact Town Between Taunus & Frankfurt",
+      paragraphsDe: [
+        "Mit dem historischen Schultheißenamt aus dem 16. Jahrhundert, der alten Dorfschmiede und modernen Wohnquartieren verbindet Steinbach (Taunus) ruhiges Wohnen im Hochtaunuskreis mit unmittelbarer Nähe zur Metropole Frankfurt und Eschborn.",
+        "Für Pendler, Geschäftsreisende und Familien rund um die Bahnstraße oder den Pijnackerplatz erspart unser 24/7-Service mühsame Koffer-Wege zur S-Bahn und parkplatzfreie Hektik am Terminal.",
+      ],
+      paragraphsEn: [
+        "Featuring landmarks such as the 16th-century Schultheißenamt alongside family residential districts, Steinbach (Taunus) sits right at the junction of the Hochtaunus hills and Frankfurt's business belt.",
+        "For early departures or late returns, skipping the walk to Weißkirchen/Steinbach station and booking a fixed-fare private car gives you reliable door-to-terminal comfort.",
+      ],
+    },
+    highlights: {
+      headingDe: "Abholpunkte in Steinbach (Taunus)",
+      headingEn: "Pick-up Areas in Steinbach (Taunus)",
+      items: [
+        {
+          nameDe: "Ortskern, Pijnackerplatz & Wohngebiete",
+          nameEn: "Town Center, Pijnackerplatz & Residential Streets",
+          descDe: "Direkte Vorfahrt in ganz Steinbach inklusive Nord- und Westbereich rund um die Uhr.",
+          descEn: "Round-the-clock pick-ups right at your home address across all neighborhoods.",
+        },
+        {
+          nameDe: "Gewerbegebiet am Autobahn-Zubringer",
+          nameEn: "Commercial Park & Local Businesses",
+          descDe: "Kurze Wege Richtung Eschborn, Praunheim und den Frankfurter Autobahnen.",
+          descEn: "Fast dispatch to offices bordering Eschborn and western Frankfurt.",
+        },
+        {
+          nameDe: "Kindersitze & Großraum auf Wunsch",
+          nameEn: "Child Seats & V-Class Available",
+          descDe: "Bis zu zwei Kindersitze sowie Großraum-Vans für Familienreisen bequem online buchbar.",
+          descEn: "Order child booster seats or an 8-seat Mercedes V-Class directly in the booking wizard.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Auch bei Fahrten Richtung Hauptbahnhof (50 €) oder Südbahnhof (53 €) nutzen unsere Fahrer die schnelle West-Anbindung über A66 oder Rosa-Luxemburg-Straße.",
+    pickupTipEn:
+      "For rides to Frankfurt Central (€50) or South Station (€53), we pick the fastest western corridor depending on live rush-hour traffic.",
+    faqs: [
+      {
+        qDe: "Was kostet die Fahrt von Steinbach (Taunus) zum Flughafen Frankfurt?",
+        qEn: "How much is the transfer from Steinbach (Taunus) to Frankfurt Airport?",
+        aDe: "Mit unserer Business Limousine fahren Sie ab Steinbach für 55 € Festpreis inkl. MwSt. zum Flughafen Frankfurt (50 € Hauptbahnhof, 53 € Südbahnhof).",
+        aEn: "Our Business Sedan fixed fare from Steinbach (Taunus) is €55 incl. VAT to Frankfurt Airport (€50 to Central Station, €53 to South Station).",
+      },
+      {
+        qDe: "Fahren Sie in Steinbach auch nachts vor den ersten S-Bahnen?",
+        qEn: "Can I book a transfer in Steinbach before the first morning S-Bahn?",
+        aDe: "Ja, wir sind an 365 Tagen rund um die Uhr für vorbestellte Abholungen ab 03:00 oder 04:00 Uhr morgens im Einsatz.",
+        aEn: "Yes—our chauffeurs operate 24/7 all year round, ideal for 3:00 AM or 4:00 AM flights.",
+      },
+    ],
+    nearbySlugs: ["oberursel", "kronberg-taunus", "eschborn", "bad-homburg"],
+  },
+  {
+    slug: "schmitten-taunus",
+    name: "Schmitten im Taunus",
+    displayName: "Schmitten im Taunus",
+    shortName: "Schmitten",
+    category: "hochtaunus",
+    regionDe: "Hochtaunuskreis · Feldberg-Gemeinde",
+    regionEn: "Hochtaunus District · Feldberg Highlands",
+    postalCodes: ["61389"],
+    population: "ca. 9.350",
+    coordinates: { lat: 50.2697, lng: 8.4444 },
+    distanceAirportKm: 42,
+    driveTimeMin: "35–42 Min.",
+    highwayRouteDe: "Über den Feldberg-/Sandplacken-Pass oder das Weiltal Richtung Oberursel / Bad Homburg auf die A661 und A5 direkt an FRA.",
+    highwayRouteEn: "Across Sandplacken Pass or Weil Valley via Oberursel/Bad Homburg onto A661 and A5 straight to Frankfurt Airport.",
+    transitInfo: {
+      lines: "Regionalbusse Richtung Oberursel, Bad Homburg oder Königstein + S-Bahn / Taunusbahn",
+      comparisonDe:
+        "Ohne eigenen Bahnanschluss dauert die Anreise ab Oberreifenberg, Arnoldshain oder Dorfweil per Bus und Umstieg leicht 75–90 Minuten. Wir holen Sie zu jeder Jahreszeit für 75 € direkt ab Haustür in allen neun Ortsteilen ab.",
+      comparisonEn:
+        "Without a direct rail station in Schmitten, bus-and-S-Bahn journeys easily take 75–90 minutes. We collect you from all nine Taunus villages right at your door in 35–42 minutes for €75.",
+    },
+    image: {
+      slug: "schmitten-taunus",
+      localPath: "/img/cities/schmitten-taunus.jpg",
+      commonsFile: "File:Schmitten (Hochtaunus) 02.jpg",
+      commonsUrl: "https://commons.wikimedia.org/wiki/File:Schmitten_(Hochtaunus)_02.jpg",
+      titleDe: "Blick über Schmitten im Hochtaunus",
+      titleEn: "View over Schmitten in the High Taunus",
+      altDe: "Weitblick über Schmitten im Taunus und die umliegenden Höhenzüge",
+      altEn: "Scenic view of Schmitten nestled in the forested High Taunus hills",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Schmitten im Taunus → Frankfurt (FRA) ab 75 €",
+      titleEn: "Airport Transfer Schmitten im Taunus ↔ Frankfurt (FRA) €75",
+      descriptionDe:
+        "Flughafentransfer Schmitten im Taunus (Arnoldshain, Reifenberg, Brombach, Dorfweil, Treisberg) nach Frankfurt (FRA) für 75 € Festpreis – 24/7.",
+      descriptionEn:
+        "Private 24/7 airport transfer from all 9 villages of Schmitten im Taunus to Frankfurt Airport (FRA) for €75 fixed fare.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Schmitten im Taunus – Zuverlässig über den Feldberg zum FRA",
+      h1En: "Schmitten im Taunus Airport Transfer – Safe & Direct from the Taunus Hills",
+      subtitleDe: "Alle 9 Ortsteile vom Großen Feldberg bis Treisberg zum Festpreis",
+      subtitleEn: "All 9 High-Taunus Villages Covered 24/7 at €75 Fixed Fare",
+      introDe:
+        "Von Oberreifenberg und Niederreifenberg über Arnoldshain, Dorfweil, Brombach, Hunoldstal, Seelenberg bis Treisberg: Wir holen Sie auch abseits der Bahnlinien sicher ab und fahren Sie für 75 € direkt zum Flughafen Frankfurt.",
+      introEn:
+        "Serving Oberreifenberg, Niederreifenberg, Arnoldshain, Dorfweil, Brombach, Hunoldstal, Seelenberg, and Treisberg: reliable year-round pick-ups for €75 fixed fare to Frankfurt Airport.",
+    },
+    portrait: {
+      headingDe: "Schmitten im Taunus – Luftkurort rund um den Großen Feldberg",
+      headingEn: "Schmitten im Taunus: Feldberg Nature & Nine Villages",
+      paragraphsDe: [
+        "Als höchstgelegene Gemeinde rund um den 881 Meter hohen Großen Feldberg umfasst Schmitten im Taunus neun idyllische Ortsteile inmitten des Naturparks Taunus – bekannt für Wanderwege, Tagungshäuser und die markante Burgruine Reifenberg.",
+        "Gerade weil der Weg durch den Hochtaunus bei Schnee, Nebel oder frühen Abflugzeiten mit viel Gepäck im ÖPNV beschwerlich sein kann, zählen zuverlässige Direkttransfers zu unseren beliebtesten Verbindungen im Kreis.",
+      ],
+      paragraphsEn: [
+        "Spanning nine picturesque highland villages beneath the 881-meter Großer Feldberg peak, Schmitten im Taunus is famous for its forest trails, conference venues, and Reifenberg Castle ruins.",
+        "Because winter weather, elevation, and missing rail links make public transport slow when carrying luggage, our door-to-door drivers offer indispensable reliability.",
+      ],
+    },
+    highlights: {
+      headingDe: "Alle Ortsteile in Schmitten inklusive",
+      headingEn: "All 9 Schmitten Villages Included",
+      items: [
+        {
+          nameDe: "Schmitten, Arnoldshain & Dorfweil",
+          nameEn: "Schmitten, Arnoldshain & Dorfweil",
+          descDe: "Abholung im Kernort, an Tagungszentren in Arnoldshain und im oberen Weiltal.",
+          descEn: "Doorstep pick-ups across central Schmitten, Arnoldshain conference centers, and Dorfweil.",
+        },
+        {
+          nameDe: "Ober- & Niederreifenberg / Seelenberg",
+          nameEn: "Oberreifenberg, Niederreifenberg & Seelenberg",
+          descDe: "Sichere Fahrten über den Sandplacken oder das Königsteiner Tal zu jeder Jahreszeit.",
+          descEn: "Year-round mountain-pass driving expertise down via Sandplacken or Königstein.",
+        },
+        {
+          nameDe: "Brombach, Hunoldstal & Treisberg",
+          nameEn: "Brombach, Hunoldstal & Treisberg",
+          descDe: "Auch abgelegene Weiler im Taunus bedienen wir ohne Anfahrtsaufpreis für 75 €.",
+          descEn: "Even remote highland hamlets share the same €75 fixed airport rate.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Im Winter behalten unsere Fahrer den Straßenzustand am Feldberg-Pass im Blick und weichen bei Bedarf frühzeitig über die Bundesstraßen B275 / B456 oder Königstein aus.",
+    pickupTipEn:
+      "During winter weather on the Feldberg pass, our chauffeurs check mountain road conditions before dispatch and smoothly adjust routing via Königstein or Usingen if needed.",
+    faqs: [
+      {
+        qDe: "Gilt der 75 € Festpreis auch für Oberreifenberg, Treisberg oder Dorfweil?",
+        qEn: "Does the €75 fixed fare include outer districts like Oberreifenberg or Treisberg?",
+        aDe: "Ja, sämtliche neun Ortsteile von Schmitten im Taunus (PLZ 61389) zahlen denselben Festpreis: 75 € zum Flughafen Frankfurt, 70 € zum Hauptbahnhof und 73 € zum Südbahnhof.",
+        aEn: "Yes—all nine districts of Schmitten (61389) travel for €75 to Frankfurt Airport (€70 to Central Station, €73 to South Station).",
+      },
+      {
+        qDe: "Haben Sie Fahrzeuge mit Allrad/Winterausrüstung und großem Kofferraum?",
+        qEn: "Do your vehicles have ample luggage capacity and winter readiness?",
+        aDe: "Ja, unsere Business Kombis und die Mercedes V-Klasse bieten viel Platz für Koffer oder Freizeitausrüstung und werden durchgehend fachgerecht bereift und gewartet.",
+        aEn: "Yes—both our Business Estates and Mercedes V-Class vans are master-serviced with seasonal tires and generous luggage space.",
+      },
+    ],
+    nearbySlugs: ["neu-anspach", "oberursel", "koenigstein-taunus", "usingen"],
+  },
+  {
+    slug: "bad-vilbel",
+    name: "Bad Vilbel",
+    displayName: "Bad Vilbel",
+    shortName: "Bad Vilbel",
+    category: "wetterau",
+    regionDe: "Wetteraukreis · Quellen- & Festspielstadt",
+    regionEn: "Wetterau District · Spa & Festival Town",
+    postalCodes: ["61118"],
+    population: "ca. 37.300",
+    coordinates: { lat: 50.1775, lng: 8.7353 },
+    distanceAirportKm: 25,
+    driveTimeMin: "22–28 Min.",
+    highwayRouteDe: "Direkt über die B3 / Friedberger Landstraße auf die A661 am Preungesheimer Dreieck oder via A5 an Terminal 1 & 3.",
+    highwayRouteEn: "Via B3 onto the A661 at Preungesheim or A66/A5 straight into Terminal 1 and 3.",
+    transitInfo: {
+      lines: "S-Bahn S6 / Mittelhessen-Express über Frankfurt West & Hbf mit Umstieg in S8/S9",
+      comparisonDe:
+        "Mit der S6 und anschließendem Umstieg im Tiefbahnhof Frankfurt Hbf vergehen rund 35–45 Minuten samt Gepäcktransport. Mit unserem Direkttransfer erreichen Sie den Flughafen aus allen Stadtteilen von Massenheim bis Dortelweil in ca. 22–28 Minuten für 65 €.",
+      comparisonEn:
+        "Taking the S6 and switching to the airport S-Bahn at Frankfurt Central takes roughly 35–45 minutes. Our private car covers Massenheim, Dortelweil, and Heilsberg in 22–28 minutes for €65.",
+    },
+    image: {
+      slug: "bad-vilbel",
+      localPath: "/img/cities/bad-vilbel.jpg",
+      commonsFile: "File:Bad Vilbel Wasserburg 1.jpg",
+      commonsUrl: "https://commons.wikimedia.org/wiki/File:Bad_Vilbel_Wasserburg_1.jpg",
+      titleDe: "Historische Wasserburg in Bad Vilbel",
+      titleEn: "Historic Moated Castle (Wasserburg) in Bad Vilbel",
+      altDe: "Burgmauer und Turm der historischen Wasserburg von Bad Vilbel am Wassergraben",
+      altEn: "Stone tower and moat of the historic Wasserburg castle in Bad Vilbel",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Bad Vilbel → Frankfurt (FRA) ab 65 € Festpreis",
+      titleEn: "Airport Transfer Bad Vilbel ↔ Frankfurt (FRA) €65 Fixed Fare",
+      descriptionDe:
+        "Flughafentransfer Bad Vilbel (Heilsberg, Dortelweil, Massenheim, Gronau) nach Frankfurt Airport (FRA) für 65 € Festpreis. 24/7 Abholung.",
+      descriptionEn:
+        "Private 24/7 airport transfer from Bad Vilbel (Heilsberg, Dortelweil, Massenheim, Gronau) to Frankfurt Airport (FRA) for €65 fixed price.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Bad Vilbel – Pünktlich aus der Quellenstadt zum FRA",
+      h1En: "Bad Vilbel Airport Transfer – Direct Fixed Fare to Frankfurt (FRA)",
+      subtitleDe: "Schnell über B3 und A661 zu allen Terminals & Frankfurter Bahnhöfen",
+      subtitleEn: "24/7 Door-to-Terminal Transfers from Bad Vilbel",
+      introDe:
+        "Aus der größten Stadt des Wetteraukreises – inklusive Dortelweil, Massenheim, Heilsberg und Gronau – bringen wir Sie zum 65 € Festpreis zuverlässig und entspannt an Ihr Abflugterminal.",
+      introEn:
+        "Serving every district of Bad Vilbel—including Dortelweil, Massenheim, Heilsberg, and Gronau—with reliable €65 fixed-price transfers straight to Frankfurt Airport.",
+    },
+    portrait: {
+      headingDe: "Bad Vilbel – Wasserburg, Burgfestspiele & starker Medienstandort",
+      headingEn: "Bad Vilbel: Moated Castle, Mineral Springs & Media Hub",
+      paragraphsDe: [
+        "Bekannt für ihre Mineralquellen, die historische Wasserburg am Nidda-Ufer samt den alljährlichen Burgfestspielen und die neue Vilco-Stadthalle zählt Bad Vilbel zu den dynamischsten Städten am Nordrand Frankfurts.",
+        "Durch den Gewerbecampus Dortelweil sowie namhafte Unternehmen entlang der Quellen- und Niddaachse bestehen täglich zahlreiche Business- und Urlaubsreisen zum Frankfurter Flughafen.",
+      ],
+      paragraphsEn: [
+        "Famed for its mineral springs, the historic moated Wasserburg hosting the annual Castle Festival, and the Vilco Civic Hall, Bad Vilbel is the largest town bordering northern Frankfurt.",
+        "With growing commercial parks in Dortelweil and direct ties to Frankfurt's media and finance sectors, our 24/7 transfers serve both executives and holidaymakers seamlessly.",
+      ],
+    },
+    highlights: {
+      headingDe: "Alle Ortsteile & Hotspots in Bad Vilbel",
+      headingEn: "Neighborhoods & Hubs in Bad Vilbel",
+      items: [
+        {
+          nameDe: "Kernstadt, Kurpark & Wasserburg",
+          nameEn: "Town Center, Kurpark & Wasserburg",
+          descDe: "Abholung im Zentrum, am Nordbahnhof, rund um die Neue Mitte und das Quellen-Quartier.",
+          descEn: "Pick-ups across Neue Mitte, Vilco hall, hotels, and central Bad Vilbel.",
+        },
+        {
+          nameDe: "Dortelweil & Gewerbegebiet Quellenpark",
+          nameEn: "Dortelweil & Business Campus",
+          descDe: "Direkte Business-Transfers von Hassia-Standorten, Studios und Unternehmenszentralen.",
+          descEn: "Prompt corporate transfers for executives and visitors in Dortelweil & Quellenpark.",
+        },
+        {
+          nameDe: "Heilsberg, Massenheim & Gronau",
+          nameEn: "Heilsberg, Massenheim & Gronau",
+          descDe: "Jeder Stadtteil von Bad Vilbel fährt ohne Aufpreis zum identischen 65 € Festpreis.",
+          descEn: "Heilsberg, Massenheim, and Gronau all travel for the same €65 fixed rate.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Über Nieder-Erlenbach oder das Preungesheimer Dreieck (A661) erreichen unsere Chauffeure alle Stadtteile Bad Vilbels schnell auch ab unserem Friedrichsdorfer Standort.",
+    pickupTipEn:
+      "From our nearby Friedrichsdorf dispatch base, our chauffeurs reach Bad Vilbel quickly via Nieder-Erlenbach or the A661/B3 corridor.",
+    faqs: [
+      {
+        qDe: "Was kostet der Flughafentransfer von Bad Vilbel nach Frankfurt (FRA)?",
+        qEn: "How much does the airport transfer from Bad Vilbel cost?",
+        aDe: "Mit der Business Limousine beträgt der Festpreis 65 € inkl. MwSt. zum Flughafen Frankfurt, 60 € zum Hauptbahnhof und 63 € zum Südbahnhof.",
+        aEn: "The fixed fare is €65 incl. VAT to Frankfurt Airport (€60 to Central Station, €63 to South Station) in a Business Sedan.",
+      },
+      {
+        qDe: "Gilt derselbe Preis auch für Massenheim, Dortelweil oder Heilsberg?",
+        qEn: "Are Massenheim, Dortelweil, and Heilsberg included in the same price?",
+        aDe: "Ja, das gesamte Stadtgebiet von Bad Vilbel (PLZ 61118) fährt zum selben Festpreis.",
+        aEn: "Yes, every neighborhood within Bad Vilbel (61118) shares the identical fixed price.",
+      },
+    ],
+    nearbySlugs: ["karben", "nieder-erlenbach-frankfurt", "harheim-frankfurt", "bad-homburg"],
+  },
+  {
+    slug: "friedberg-hessen",
+    name: "Friedberg (Hessen)",
+    displayName: "Friedberg (Hessen)",
+    shortName: "Friedberg",
+    category: "wetterau",
+    regionDe: "Wetteraukreis · Kreis- & Burgstadt",
+    regionEn: "Wetterau District · Historic Castle Town",
+    postalCodes: ["61169"],
+    population: "ca. 30.400",
+    coordinates: { lat: 50.3353, lng: 8.7553 },
+    distanceAirportKm: 41,
+    driveTimeMin: "30–36 Min.",
+    highwayRouteDe: "Schnell über die B3a / Anschlussstelle Friedberg auf die A5 und direkt durch bis zum Frankfurter Kreuz / Terminal 1 & 3.",
+    highwayRouteEn: "Straight onto the A5 via Friedberg interchange and south through Frankfurter Kreuz directly to Terminals 1 & 3.",
+    transitInfo: {
+      lines: "S-Bahn S6 / RE 30 / RB 40 über Frankfurt Hbf mit anschließendem S-Bahn-Umstieg",
+      comparisonDe:
+        "Per Bahn und Umstieg am Hauptbahnhof dauert die Fahrt zum Terminal meist 50–60 Minuten. Über die naheliegende A5 bringt Sie unser Direkttransfer aus Friedberg, Ockstadt, Dorheim oder Bruchenbrücken in rund 30–36 Minuten für 80 € direkt ans Terminal.",
+      comparisonEn:
+        "Combining rail into Frankfurt Central with an S-Bahn transfer takes roughly 50–60 minutes. Driving nonstop down the A5 gets you from Friedberg to FRA in 30–36 minutes for €80.",
+    },
+    image: {
+      slug: "friedberg-hessen",
+      localPath: "/img/cities/friedberg-hessen.jpg",
+      commonsFile: "File:Burg Friedberg Nordtor und Adolfsturm.jpg",
+      commonsUrl:
+        "https://commons.wikimedia.org/wiki/File:Burg_Friedberg_Nordtor_und_Adolfsturm.jpg",
+      titleDe: "Burg Friedberg mit Nordtor und Adolfsturm",
+      titleEn: "Friedberg Castle Gate and Adolfsturm",
+      altDe: "Historisches Nordtor und mittelalterlicher Adolfsturm der Reichsburg Friedberg in Hessen",
+      altEn: "Medieval North Gate and Adolfsturm keep at Friedberg Castle in Hesse",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Friedberg (Hessen) → Frankfurt (FRA) ab 80 €",
+      titleEn: "Airport Transfer Friedberg (Hessen) ↔ Frankfurt (FRA) €80",
+      descriptionDe:
+        "Direkter Flughafentransfer Friedberg (Hessen) (Kernstadt, Fauerbach, Ockstadt, Dorheim, Bruchenbrücken) nach Frankfurt Airport (FRA) für 80 € Festpreis.",
+      descriptionEn:
+        "Private 24/7 airport transfer from Friedberg (Hessen) to Frankfurt Airport (FRA) for €80 fixed fare via A5 motorway.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Friedberg (Hessen) – Schnell über die A5 nach Frankfurt",
+      h1En: "Friedberg (Hessen) Airport Transfer – Nonstop via A5 to FRA",
+      subtitleDe: "Direkt ab der Wetterauer Kreisstadt rund um die Uhr ans Terminal",
+      subtitleEn: "24/7 Fixed-Price Airport & Station Rides from Friedberg",
+      introDe:
+        "Aus der Kreisstadt Friedberg – ob Kaiserstraße, THM-Campus, Ockstadt, Fauerbach oder Dorheim – fahren Sie für 80 € Festpreis direkt über die A5 ans Abflugterminal oder zum Fernbahnhof Frankfurt.",
+      introEn:
+        "From downtown Friedberg, Ockstadt, Fauerbach, Dorheim, and the THM campus, enjoy a seamless €80 fixed-price transfer down the A5 to Frankfurt Airport.",
+    },
+    portrait: {
+      headingDe: "Friedberg (Hessen) – Reichsburg, Adolfsturm & Hochschulstadt",
+      headingEn: "Friedberg (Hessen): Imperial Castle & Wetterau Capital",
+      paragraphsDe: [
+        "Mit der weitläufigen Reichsburg, dem 54 Meter hohen Adolfsturm, dem historischen Judenbad (Mikwe) und der Technischen Hochschule Mittelhessen prägt Friedberg das historische wie wirtschaftliche Zentrum des Wetteraukreises.",
+        "Dank der direkten Autobahn-Anbindung an die A5 erreichen unsere Chauffeure Friedberg ebenso rasch ab Rosbach und bieten für Geschäfts- wie Urlaubsreisen planbare Festpreise ohne Taxameter.",
+      ],
+      paragraphsEn: [
+        "Anchored by one of Germany's largest castles, the 54-meter Adolfsturm tower, a famous medieval Mikveh, and the THM University campus, Friedberg serves as the vibrant center of the Wetterau district.",
+        "With immediate access to the A5 motorway, our chauffeurs offer fast, taxameter-free airport and central-station connections at guaranteed rates.",
+      ],
+    },
+    highlights: {
+      headingDe: "Abholorte in Friedberg & seinen Stadtteilen",
+      headingEn: "Pick-up Areas Across Friedberg",
+      items: [
+        {
+          nameDe: "Kernstadt, Burgviertel & THM Campus",
+          nameEn: "Old Town, Castle Quarter & THM Campus",
+          descDe: "Zentrale Abholungen entlang der Kaiserstraße, am Bahnhof sowie in Wohnquartieren rund um die Burg.",
+          descEn: "Doorstep pick-ups along Kaiserstraße, hotels, university buildings, and the castle district.",
+        },
+        {
+          nameDe: "Ockstadt, Fauerbach & Bauernheim",
+          nameEn: "Ockstadt, Fauerbach & Bauernheim",
+          descDe: "Alle westlichen und südlichen Stadtteile entlang B455 und A5 ohne Zuschlag inklusive.",
+          descEn: "Western and southern districts near the A5 interchange included in the €80 rate.",
+        },
+        {
+          nameDe: "Dorheim, Ossenheim & Bruchenbrücken",
+          nameEn: "Dorheim, Ossenheim & Bruchenbrücken",
+          descDe: "Auch östliche Stadtteile erreichen unsere Fahrzeuge zuverlässig rund um die Uhr.",
+          descEn: "Eastern Friedberg villages served 24/7 for early check-ins and late arrivals.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Über die B455 oder die Anschlussstelle Friedberg der A5 vermeiden wir Innenstadt-Engpässe und bringen Sie pünktlich durch das Frankfurter Kreuz ans Terminal.",
+    pickupTipEn:
+      "Using the B455 and A5 Friedberg exit bypasses downtown bottlenecks and routes straight to Terminal 1 or 3.",
+    faqs: [
+      {
+        qDe: "Was kostet die Fahrt ab Friedberg (Hessen) zum Flughafen Frankfurt?",
+        qEn: "How much is the fixed fare from Friedberg to Frankfurt Airport?",
+        aDe: "Eine Fahrt ab ganz Friedberg (PLZ 61169) kostet mit unserer Business Limousine 80 € zum Flughafen Frankfurt, 75 € zum Hauptbahnhof und 78 € zum Südbahnhof.",
+        aEn: "The fixed fare across all of Friedberg (61169) is €80 to Frankfurt Airport, €75 to Central Station, and €78 to South Station.",
+      },
+      {
+        qDe: "Können Firmen in Friedberg auch auf monatliche Rechnung fahren?",
+        qEn: "Do Friedberg corporate customers have an invoicing option?",
+        aDe: "Ja, für Unternehmen und Institutionen bieten wir nach kurzer Abstimmung bequeme Zahlung auf Firmenrechnung an.",
+        aEn: "Yes, corporate and institutional travelers can pay conveniently by monthly or single invoice.",
+      },
+    ],
+    nearbySlugs: ["bad-nauheim", "rosbach-rodheim", "karben", "bad-vilbel"],
+  },
+  {
+    slug: "bad-nauheim",
+    name: "Bad Nauheim",
+    displayName: "Bad Nauheim",
+    shortName: "Bad Nauheim",
+    category: "wetterau",
+    regionDe: "Wetteraukreis · Jugendstil- & Gesundheitsstadt",
+    regionEn: "Wetterau District · Art Nouveau Spa Town",
+    postalCodes: ["61231"],
+    population: "ca. 32.700",
+    coordinates: { lat: 50.3667, lng: 8.7514 },
+    distanceAirportKm: 45,
+    driveTimeMin: "35–42 Min.",
+    highwayRouteDe: "Direkt über die Anschlussstelle Ober-Mörlen / Bad Nauheim auf die A5 und geradeaus bis zum Frankfurter Kreuz / Terminal 1 & 3.",
+    highwayRouteEn: "Directly onto the A5 via Bad Nauheim / Ober-Mörlen interchange and straight south to Terminal 1 & 3.",
+    transitInfo: {
+      lines: "RE / RB Regionalbahn oder S6 ab Friedberg mit Umstieg am Frankfurter Hauptbahnhof",
+      comparisonDe:
+        "Per Zug inklusive Fußweg durch das Kurviertel und Umstieg am Hauptbahnhof beträgt die Reisezeit rund 55–70 Minuten. Im direkten Chauffeurfahrzeug fahren wir Sie aus jedem Ortsteil (Kernstadt, Nieder-Mörlen, Schwalheim, Steinfurth) in 35–42 Minuten für 80 € ans Gate.",
+      comparisonEn:
+        "By train plus transfer at Frankfurt Central Station the trip runs 55–70 minutes. Our private car takes you nonstop from downtown, Nieder-Mörlen, or Steinfurth in 35–42 minutes for €80.",
+    },
+    image: {
+      slug: "bad-nauheim",
+      localPath: "/img/cities/bad-nauheim.jpg",
+      commonsFile: "File:Sprudelhof Bad Nauheim, Hessen, Germany.jpg",
+      commonsUrl:
+        "https://commons.wikimedia.org/wiki/File:Sprudelhof_Bad_Nauheim,_Hessen,_Germany.jpg",
+      titleDe: "Historischer Sprudelhof in Bad Nauheim",
+      titleEn: "Art Nouveau Sprudelhof in Bad Nauheim",
+      altDe: "Jugendstil-Badehäuser und Springbrunnen des Sprudelhofs in Bad Nauheim",
+      altEn: "Art Nouveau bathhouses and central fountain of the Sprudelhof in Bad Nauheim",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Bad Nauheim → Frankfurt (FRA) ab 80 € Festpreis",
+      titleEn: "Airport Transfer Bad Nauheim ↔ Frankfurt (FRA) €80 Fixed Fare",
+      descriptionDe:
+        "24/7 Flughafentransfer & Klinikfahrten Bad Nauheim (Sprudelhof, Kerckhoff-Klinik, Steinfurth, Nieder-Mörlen) nach Frankfurt (FRA) für 80 € Festpreis.",
+      descriptionEn:
+        "Private 24/7 airport & clinic transfers between Bad Nauheim (Kerckhoff Clinic, Steinfurth, Nieder-Mörlen) and Frankfurt Airport (FRA) for €80.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Bad Nauheim – Komfortabel ab Kur- & Gesundheitsstadt zum FRA",
+      h1En: "Bad Nauheim Airport Transfer – Direct Fixed-Fare Rides to FRA",
+      subtitleDe: "Vom Sprudelhof und der Kerckhoff-Klinik direkt ohne Umstieg ans Terminal",
+      subtitleEn: "24/7 Chauffeur, Clinic & Airport Service from Bad Nauheim",
+      introDe:
+        "Ob internationaler Patient am Gesundheitsstandort Bad Nauheim, Gast am Kurpark und Sprudelhof oder Privatreisender aus Schwalheim, Rödgen, Wisselsheim und Steinfurth: Unser Chauffeurservice bringt Sie für 80 € direkt nach Frankfurt (FRA).",
+      introEn:
+        "Whether traveling to the medical campus, hotels around the Sprudelhof, or private residences in Steinfurth and Nieder-Mörlen: enjoy direct transfers to Frankfurt Airport for €80 fixed price.",
+    },
+    portrait: {
+      headingDe: "Bad Nauheim – Jugendstil-Sprudelhof, Gradierbauten & Kerckhoff-Klinik",
+      headingEn: "Bad Nauheim: Jugendstil Heritage & Leading Medical Campus",
+      paragraphsDe: [
+        "Mit dem einzigartigen Jugendstil-Ensemble rund um den Sprudelhof, der Trinkkuranlage, den historischen Gradierbauten und dem Rosendorf Steinfurth zählt Bad Nauheim zu den bekanntesten Kurstädten Hessens.",
+        "Darüber hinaus reisen Patienten, Angehörige und Fachärzte aus aller Welt zu den Fachkliniken – allen voran der Kerckhoff-Klinik sowie Reha-Zentren. Unsere ruhigen Mercedes-Fahrzeuge garantieren dabei maximalen Sitzkomfort zwischen Klinik, Hotel und Terminal.",
+      ],
+      paragraphsEn: [
+        "Renowned across Europe for its preserved Art Nouveau Sprudelhof spa architecture, graduation towers, and the Rose Village of Steinfurth, Bad Nauheim seamlessly blends spa elegance with world-class healthcare.",
+        "Patients, visiting physicians, and guests of the Kerckhoff Clinic and rehabilitation centers count on our calm, comfortable Mercedes rides straight between hotel, clinic, and terminal.",
+      ],
+    },
+    highlights: {
+      headingDe: "Bekannte Ziele & Abholpunkte in Bad Nauheim",
+      headingEn: "Key Pick-up Areas in Bad Nauheim",
+      items: [
+        {
+          nameDe: "Kerckhoff-Klinik, Reha-Kliniken & Kurviertel",
+          nameEn: "Kerckhoff Clinic, Rehab Centers & Spa Park",
+          descDe: "Einfühlsame Abholung direkt am Klinikeingang, Sprudelhof und allen Kurhotels.",
+          descEn: "Considerate doorstep service at clinics, Sprudelhof hotels, and spa residences.",
+        },
+        {
+          nameDe: "Steinfurth, Nieder-Mörlen & Wisselsheim",
+          nameEn: "Steinfurth, Nieder-Mörlen & Wisselsheim",
+          descDe: "Sämtliche Ortsteile inkl. Rosendorf Steinfurth zum einheitlichen 80 € Tarif.",
+          descEn: "All outer districts including the Rose Village of Steinfurth share the €80 fare.",
+        },
+        {
+          nameDe: "Schwalheim & Rödgen / B3",
+          nameEn: "Schwalheim & Rödgen",
+          descDe: "Direkte Anfahrt über A5 und B3 auch für frühmorgendliche Abflüge rund um die Uhr.",
+          descEn: "Fast A5 and B3 access day and night for early check-ins.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Für Patientinnen, Patienten und Begleitpersonen mit längerem Klinikaufenthalt bieten wir in unserer Mercedes E-Klasse und V-Klasse bequemes Einsteigen plus Platz für Rollator oder mehrere Koffer.",
+    pickupTipEn:
+      "Our Mercedes E-Class and V-Class vans offer effortless entry and plenty of room for luggage or mobility aids for clinic and spa guests.",
+    faqs: [
+      {
+        qDe: "Was kostet ein Flughafentransfer von Bad Nauheim zum Flughafen Frankfurt?",
+        qEn: "How much is the fixed fare from Bad Nauheim to Frankfurt Airport?",
+        aDe: "Eine Fahrt ab Bad Nauheim (inkl. Steinfurth, Nieder-Mörlen und Schwalheim) kostet mit der Business Limousine 80 € zum Flughafen Frankfurt, 75 € zum Hauptbahnhof und 78 € zum Südbahnhof.",
+        aEn: "The fixed fare across Bad Nauheim (61231) is €80 to Frankfurt Airport, €75 to Central Station, and €78 to South Station.",
+      },
+      {
+        qDe: "Holen Sie internationale Patienten auch mit Namensschild am Frankfurter Flughafen ab?",
+        qEn: "Can international clinic patients be met at the terminal with a name sign?",
+        aDe: "Ja, selbstverständlich – bei Rückflügen bzw. Abholungen am Terminal tragen Sie bei Wunsch einfach 'Meet & Greet / Namensschild' in der Nachricht mit ein.",
+        aEn: "Yes—simply request a terminal Meet & Greet with a name board in your booking notes.",
+      },
+    ],
+    nearbySlugs: ["friedberg-hessen", "rosbach-rodheim", "karben", "bad-homburg"],
+  },
+  {
+    slug: "eschborn",
+    name: "Eschborn",
+    displayName: "Eschborn",
+    shortName: "Eschborn",
+    category: "frankfurt_nord",
+    regionDe: "Main-Taunus-Kreis · Wirtschaftsstandort West",
+    regionEn: "Main-Taunus District · Business Hub West",
+    postalCodes: ["65760"],
+    population: "ca. 22.500",
+    coordinates: { lat: 50.1439, lng: 8.5689 },
+    distanceAirportKm: 17,
+    driveTimeMin: "15–20 Min.",
+    highwayRouteDe: "Direkt über die A66 am Eschborner Dreieck oder B8/A648 schnell weiter über Westkreuz / A5 an Terminal 1 & 3.",
+    highwayRouteEn: "Straight onto A66/A648 at Eschborn Triangle and south on the A5 directly to Terminal 1 & 3.",
+    transitInfo: {
+      lines: "S-Bahn S3 & S4 (Eschborn / Eschborn-Süd) mit Umstieg in Frankfurt Hbf",
+      comparisonDe:
+        "Zwischen Eschborn-Süd und dem Terminal fährt die S-Bahn rund 30–35 Minuten inklusive Umstieg am Hauptbahnhof. Mit unserem Business-Transfer sind Sie in nur 15–20 Minuten für 55 € ohne Umsteigen direkt vor dem Abflugbereich.",
+      comparisonEn:
+        "Connecting via S3/S4 through Frankfurt Central Station takes 30–35 minutes. By chauffeur car you reach FRA Terminals 1 & 3 in just 15–20 minutes for €55.",
+    },
+    image: {
+      slug: "eschborn",
+      localPath: "/img/cities/eschborn.jpg",
+      commonsFile: "File:Eschborn - Stadthalle und Rathaus.jpg",
+      commonsUrl: "https://commons.wikimedia.org/wiki/File:Eschborn_-_Stadthalle_und_Rathaus.jpg",
+      titleDe: "Stadthalle und Rathaus in Eschborn",
+      titleEn: "Municipal Hall and Town Hall in Eschborn",
+      altDe: "Rathausplatz mit Stadthalle und Rathaus im Zentrum von Eschborn",
+      altEn: "Rathausplatz square with the town hall and civic center in Eschborn",
+    },
+    seo: {
+      titleDe: "Flughafentransfer Eschborn → Frankfurt (FRA) ab 55 € Festpreis",
+      titleEn: "Airport Transfer Eschborn ↔ Frankfurt (FRA) €55 Fixed Fare",
+      descriptionDe:
+        "Business- & Privat-Flughafentransfer Eschborn (Eschborn-Süd, Camp Phoenix, Niederhöchstadt) nach Frankfurt Airport (FRA) für 55 € Festpreis.",
+      descriptionEn:
+        "Executive & private 24/7 airport transfer between Eschborn (Eschborn-Süd, Niederhöchstadt, Camp Phoenix) and Frankfurt Airport (FRA) for €55.",
+    },
+    hero: {
+      h1De: "Flughafentransfer Eschborn – In 15–20 Minuten direkt zum Terminal",
+      h1En: "Eschborn Airport Transfer – Fast Executive Chauffeur to Frankfurt (FRA)",
+      subtitleDe: "Direkt vom Business-Park Eschborn-Süd und Niederhöchstadt ans Gate",
+      subtitleEn: "Nonstop Corporate & Private Transfers from Eschborn",
+      introDe:
+        "Einer der stärksten Business-Standorte rund um Frankfurt in Rekordzeit: Ob Eschborn-Süd, Camp-Phoenix-Park, Rathausplatz oder Niederhöchstadt – wir bringen Sie für 55 € Festpreis in nur ca. 15–20 Minuten direkt an Terminal 1 oder 3.",
+      introEn:
+        "One of Frankfurt's busiest corporate hubs reached in record time: whether departing from Eschborn-Süd, Camp Phoenix, or Niederhöchstadt, reach FRA Terminal 1 or 3 in 15–20 minutes for €55.",
+    },
+    portrait: {
+      headingDe: "Eschborn – Finanz- & Tech-Campus vor den Toren Frankfurts",
+      headingEn: "Eschborn: Corporate Towers & Fast Airport Access",
+      paragraphsDe: [
+        "Mit Konzernstandorten von Deutscher Börse, Deutsche Bank, EY, Vodafone, Samsung und der GIZ zählt das Gebiet Eschborn-Süd und Camp-Phoenix zu den wichtigsten Bürostandorten im gesamten Rhein-Main-Raum.",
+        "Durch die Nähe zur A66 und nur 15–20 Minuten Fahrzeit zum Flughafen Frankfurt ist unsere repräsentative Mercedes E-Klasse und S-Klasse ideal für enge Flugpläne, Roadshows und VIP-Abholungen.",
+      ],
+      paragraphsEn: [
+        "Home to offices of Deutsche Börse, EY, Deutsche Bank, Vodafone, Samsung, and GIZ across Eschborn-Süd and Camp-Phoenix-Park, Eschborn stands among Rhine-Main's premier commercial centers.",
+        "Just 15–20 minutes from Frankfurt Airport via the A66, our discreet Mercedes sedans and V-Class vans are tailored for tight flight schedules, roadshows, and executive guests.",
+      ],
+    },
+    highlights: {
+      headingDe: "Wichtige Business- & Wohngebiete in Eschborn",
+      headingEn: "Key Corporate Parks & Areas in Eschborn",
+      items: [
+        {
+          nameDe: "Eschborn-Süd & The Cube",
+          nameEn: "Eschborn-Süd & Deutsche Börse Campus",
+          descDe: "Direkte Vorfahrt an Bürogebäuden entlang Mergenthalerallee, Alfred-Herrhausen-Allee und Helfmann-Park.",
+          descEn: "Prompt executive pick-ups along Mergenthalerallee, Alfred-Herrhausen-Allee, and Helfmann-Park.",
+        },
+        {
+          nameDe: "Camp-Phoenix-Park & Gewerbegebiet Ost",
+          nameEn: "Camp-Phoenix-Park & East Business Zone",
+          descDe: "Repräsentative Fahrten zum Terminal, zur Messe Frankfurt oder zum Frankfurter Hauptbahnhof (50 €).",
+          descEn: "Direct transfers to Frankfurt Airport (€55), Messe Frankfurt, or Central Station (€50).",
+        },
+        {
+          nameDe: "Alt-Eschborn & Niederhöchstadt",
+          nameEn: "Old Town & Niederhöchstadt",
+          descDe: "Alle Wohnstraßen im gesamten Stadtgebiet zum selben transparenten 55 € Flughafentarif.",
+          descEn: "All residential neighborhoods share the identical €55 airport rate.",
+        },
+      ],
+    },
+    pickupTipDe:
+      "Auch für mehrstündige Geschäftstermine zwischen Eschborn, Frankfurt City und Bad Homburg nutzen viele Kunden unsere flexible Stundenbuchung ab 69 €/Std.",
+    pickupTipEn:
+      "For multi-meeting schedules connecting Eschborn, downtown Frankfurt, and Bad Homburg, executives frequently reserve our flexible hourly chauffeur from €69/hr.",
+    faqs: [
+      {
+        qDe: "Was kostet der Flughafentransfer von Eschborn nach Frankfurt Airport?",
+        qEn: "What is the fixed price from Eschborn to Frankfurt Airport?",
+        aDe: "Eine einfache Fahrt ab Eschborn oder Niederhöchstadt (PLZ 65760) kostet mit der Business Limousine 55 € zum Flughafen Frankfurt, 50 € zum Hauptbahnhof und 53 € zum Südbahnhof.",
+        aEn: "A fixed-fare transfer from Eschborn (65760) costs €55 to Frankfurt Airport, €50 to Central Station, and €53 to South Station.",
+      },
+      {
+        qDe: "Bieten Sie für Unternehmen in Eschborn auch Stundenbuchungen oder Messetransfers an?",
+        qEn: "Do you offer hourly chauffeur standbys or Messe transfers from Eschborn?",
+        aDe: "Ja, unter 'Stundenbuchung' können Firmenwagen mit Chauffeur ab 2 Stunden flexibel gebucht werden – ideal für Besucherdelegationen und Roadshows.",
+        aEn: "Yes—our hourly chauffeur service (from 2 hours) is ideal for executive delegations, Messe Frankfurt shuttles, and roadshows.",
+      },
+    ],
+    nearbySlugs: ["steinbach-taunus", "kronberg-taunus", "riedberg-frankfurt", "oberursel"],
   },
 ];
 

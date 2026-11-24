@@ -75,7 +75,7 @@ function getPrice(transportInformation: BahnhofInformationType) {
           )?.Flughafen || 0;
       } else if (
         transportInformation.abholortRueckreise ===
-          "Frankfurter Hauptbahnhof" ||
+        "Frankfurter Hauptbahnhof" ||
         transportInformation.zielortRueckreise === "Frankfurter Hauptbahnhof"
       ) {
         price +=
@@ -106,12 +106,12 @@ function getPrice(transportInformation: BahnhofInformationType) {
     price += (26 * 2);
   } else if (transportInformation.fahrzeug === "Business Kombi" && transportInformation.rueckReise) {
     price += (2 * 2);
-  } else if (transportInformation.fahrzeug === "Großraum Limousine" ) {
+  } else if (transportInformation.fahrzeug === "Großraum Limousine") {
     price += 26;
   } else if (transportInformation.fahrzeug === "Business Kombi") {
     price += 2;
   }
-  
+
   return price.toFixed(2);
 }
 

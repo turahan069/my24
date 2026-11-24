@@ -7,32 +7,39 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "next-i18next";
 import { IoArrowForward } from "react-icons/io5";
+import { getBookHref } from "@/lib/navigation";
+
+/**
+ * Gemeinsamer Klick-Handler für Markenlogo und „Home“-Navigationspunkt:
+ * Auf der Startseite wird weich ganz nach oben gescrollt bzw. ein Hash/Query bereinigt;
+ * auf Unterseiten greift die normale Next.js-Navigation zu `/`.
+ */
+export function goHomeOrScrollTop(
+  e: React.MouseEvent<HTMLAnchorElement>,
+  router: ReturnType<typeof useRouter>,
+  onDone?: () => void
+) {
+  onDone?.();
+  if (router.pathname === "/") {
+    e.preventDefault();
+    if (router.asPath !== "/") {
+      router.push("/", undefined, { scroll: true });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+}
 
 const Navbar = () => {
   const router = useRouter();
   const { t } = useTranslation("common");
   const [isOpen, setIsOpen] = useState(false);
 
-  const hasInlineBookSection =
-    router.pathname === "/" ||
-    router.pathname === "/flughafentransfer/[slug]" ||
-    router.pathname === "/leistungen/[slug]" ||
-    router.pathname === "/stundenbuchung";
-
-  const bookHref = hasInlineBookSection
-    ? `#${t("nav-buchen")}`
-    : `/#${t("nav-buchen")}`;
+  // Auf Seiten mit Formular direkt zum Anker scrollen, sonst zurück zur Startseite/#Buchen
+  const bookHref = getBookHref(router.pathname, t("nav-buchen"));
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    setIsOpen(false);
-    if (router.pathname === "/") {
-      e.preventDefault();
-      if (router.asPath !== "/") {
-        router.push("/", undefined, { scroll: true });
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
+    goHomeOrScrollTop(e, router, () => setIsOpen(false));
   };
 
   return (
@@ -40,7 +47,7 @@ const Navbar = () => {
       {/* Desktop Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-40 hidden w-full border-b border-white/10 bg-[#0A0B0E]/95 px-6 py-4 text-white backdrop-blur-md lg:block">
         <div className="mx-auto flex h-full max-w-7xl flex-row items-center justify-between gap-6">
-          <div className="flex flex-row items-center gap-6 xl:gap-8">
+          <div className="flex flex-row items-center gap-4 xl:gap-7">
             <Link
               href="/"
               prefetch={true}

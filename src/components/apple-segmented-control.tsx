@@ -7,6 +7,7 @@ export type SegmentedOption<T extends string> = {
 
 type AppleSegmentedControlProps<T extends string> = {
   label?: string | null;
+  labelAdornment?: React.ReactNode;
   options: readonly SegmentedOption<T>[];
   value: T;
   onChange: (value: T) => void;
@@ -19,6 +20,7 @@ type AppleSegmentedControlProps<T extends string> = {
  */
 export function AppleSegmentedControl<T extends string>({
   label,
+  labelAdornment,
   options,
   value,
   onChange,
@@ -26,8 +28,15 @@ export function AppleSegmentedControl<T extends string>({
 }: AppleSegmentedControlProps<T>) {
   return (
     <div className="flex w-full flex-col gap-2">
-      {label ? (
-        <span className="text-sm font-medium text-neutral-300">{label}</span>
+      {label || labelAdornment ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {label ? (
+            <span className="text-sm font-medium text-neutral-300">
+              {label}
+            </span>
+          ) : null}
+          {labelAdornment}
+        </div>
       ) : null}
       <div
         role="radiogroup"

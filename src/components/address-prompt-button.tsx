@@ -6,6 +6,7 @@ type AddressPromptButtonProps = {
   strasse: string;
   hausnummer: string;
   onClick: () => void;
+  required?: boolean;
 };
 
 /**
@@ -16,6 +17,7 @@ export function AddressPromptButton({
   strasse,
   hausnummer,
   onClick,
+  required = false,
 }: AddressPromptButtonProps) {
   const { t } = useTranslation("common");
   const isComplete = Boolean(strasse.trim() && hausnummer.trim());
@@ -47,9 +49,18 @@ export function AddressPromptButton({
             className={`truncate text-sm font-semibold ${
               isComplete ? "text-white" : "text-amber-200"
             }`}>
-            {isComplete
-              ? `${strasse} ${hausnummer}`
-              : t("wizard-extra.enter-street")}
+            {isComplete ? (
+              `${strasse} ${hausnummer}`
+            ) : (
+              <>
+                {t("wizard-extra.enter-street")}
+                {required ? (
+                  <span className="ml-0.5 font-bold text-red-400" aria-hidden="true">
+                    *
+                  </span>
+                ) : null}
+              </>
+            )}
           </span>
           {!isComplete ? (
             <span className="truncate text-xs text-amber-200/75">

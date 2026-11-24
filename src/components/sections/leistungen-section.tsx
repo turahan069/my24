@@ -60,6 +60,15 @@ const SERVICE_CARDS = [
     descKey: "index.tabelle-beschreibung-6",
     imgPos: "object-center",
   },
+  {
+    slug: "krankenfahrten",
+    href: "/leistungen/krankenfahrten",
+    image: "/img/Fuhrpark_V_Klasse.jpg",
+    alt: "Sitzende Krankenfahrten",
+    titleKey: "index.tabelle-title-7",
+    descKey: "index.tabelle-beschreibung-7",
+    imgPos: "object-center",
+  },
 ] as const;
 
 const LeistungenSection = () => {
@@ -144,48 +153,69 @@ const LeistungenSection = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {SERVICE_CARDS.map((card) => (
-            <Link
-              key={card.slug}
-              href={card.href}
-              className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#151924] transition duration-200 hover:-translate-y-0.5 hover:border-[#0071E3]/60 hover:bg-[#191E2B]"
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#0E1118]">
-                <Image
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className={`object-cover ${card.imgPos} transition-transform duration-300 group-hover:scale-[1.03]`}
-                  src={card.image}
-                  alt={card.alt}
-                />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#151924]/70 to-transparent" />
-                {"primaryBadge" in card && card.primaryBadge ? (
-                  <span className="absolute top-3 left-3 rounded-full bg-[#0071E3] px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-                    {isEn ? "Core Focus · From €50" : "Hauptservice · ab 50 €"}
-                  </span>
-                ) : "hourlyBadge" in card && card.hourlyBadge ? (
-                  <span className="absolute top-3 left-3 rounded-full border border-white/20 bg-[#0B0D12]/85 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
-                    {isEn ? "From €69/hr" : "ab 69 €/Std."}
-                  </span>
-                ) : null}
-              </div>
-              <div className="flex flex-1 flex-col p-5">
-                <h4 className="text-lg font-bold tracking-tight text-white">
-                  {t(card.titleKey)}
-                </h4>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-neutral-300">
-                  {t(card.descKey)}
-                </p>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#5AC8FA]">
-                  <span>{t("wizard-extra.learn-more")}</span>
-                  <IoArrowForward
-                    className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
-                    aria-hidden="true"
+          {SERVICE_CARDS.map((card) => {
+            const isWideMedical = card.slug === "krankenfahrten";
+            return (
+              <Link
+                key={card.slug}
+                href={card.href}
+                className={`group flex h-full overflow-hidden rounded-2xl border border-white/10 bg-[#151924] transition duration-200 hover:-translate-y-0.5 hover:border-[#0071E3]/60 hover:bg-[#191E2B] ${
+                  isWideMedical
+                    ? "flex-col md:col-span-2 md:flex-row lg:col-span-3"
+                    : "flex-col"
+                }`}
+              >
+                <div
+                  className={`relative overflow-hidden bg-[#0E1118] ${
+                    isWideMedical
+                      ? "aspect-[4/3] w-full shrink-0 md:aspect-auto md:w-72 lg:w-96"
+                      : "aspect-[4/3] w-full"
+                  }`}
+                >
+                  <Image
+                    fill
+                    sizes={
+                      isWideMedical
+                        ? "(max-width: 768px) 100vw, 384px"
+                        : "(max-width: 768px) 100vw, 33vw"
+                    }
+                    className={`object-cover ${card.imgPos} transition-transform duration-300 group-hover:scale-[1.03]`}
+                    src={card.image}
+                    alt={card.alt}
                   />
-                </span>
-              </div>
-            </Link>
-          ))}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#151924]/70 to-transparent" />
+                  {"primaryBadge" in card && card.primaryBadge ? (
+                    <span className="absolute top-3 left-3 rounded-full bg-[#0071E3] px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
+                      {isEn ? "Core Focus · From €50" : "Hauptservice · ab 50 €"}
+                    </span>
+                  ) : "hourlyBadge" in card && card.hourlyBadge ? (
+                    <span className="absolute top-3 left-3 rounded-full border border-white/20 bg-[#0B0D12]/85 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                      {isEn ? "From €69/hr" : "ab 69 €/Std."}
+                    </span>
+                  ) : isWideMedical ? (
+                    <span className="absolute top-3 left-3 rounded-full border border-white/20 bg-[#0B0D12]/85 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                      {isEn ? "Private & Voucher" : "Privat & Transportschein"}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="flex flex-1 flex-col justify-center p-5 sm:p-6">
+                  <h4 className="text-lg font-bold tracking-tight text-white">
+                    {t(card.titleKey)}
+                  </h4>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                    {t(card.descKey)}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#5AC8FA]">
+                    <span>{t("wizard-extra.learn-more")}</span>
+                    <IoArrowForward
+                      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

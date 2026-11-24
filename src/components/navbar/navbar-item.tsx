@@ -1,3 +1,4 @@
+import type React from "react";
 import Link from "next/link";
 
 type NavbarItemProps = {
@@ -5,7 +6,7 @@ type NavbarItemProps = {
   href: string;
   isRoute?: boolean;
   active?: boolean;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 };
 
 const NavbarItem = ({
@@ -15,7 +16,7 @@ const NavbarItem = ({
   active = false,
   onClick,
 }: NavbarItemProps) => {
-  const baseClass = `cursor-pointer whitespace-nowrap text-sm font-medium transition-colors xl:text-[15px] ${
+  const baseClass = `cursor-pointer whitespace-nowrap text-[13px] font-medium transition-colors xl:text-[15px] ${
     active ? "text-white" : "text-neutral-300 hover:text-white"
   }`;
 

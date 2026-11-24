@@ -4,7 +4,8 @@ export type ServiceSlug =
   | "messetransfer"
   | "chauffeurservice"
   | "expresskurier"
-  | "limousinenservice";
+  | "limousinenservice"
+  | "krankenfahrten";
 
 export type ServiceFeature = {
   titleDe: string;
@@ -142,13 +143,13 @@ export const SERVICES: ServiceEntry[] = [
       "Urlaubs- & Familienreisen ab Frankfurt Airport (Terminal 1 & 3)",
       "Geschäftsreisen mit Terminanschluss im Rhein-Main-Gebiet",
       "Rückabholung mit persönlichem Terminal-Empfang nach Langstreckenflügen",
-      "Gruppen- & Teamtransfers bis 8 Personen im Großraumfahrzeug",
+      "Gruppen- & Teamtransfers bis 6 Fahrgäste im Großraumfahrzeug",
     ],
     useCasesEn: [
       "Family holidays departing from Frankfurt Airport Terminal 1 & 3",
       "Executive departures and arrivals across Rhine-Main",
       "Meet-and-greet pickups after international long-haul landings",
-      "Group & family rides for up to 8 travelers with bulky luggage",
+      "Group & family rides for up to 6 travelers with bulky luggage",
     ],
     faqs: [
       {
@@ -166,8 +167,8 @@ export const SERVICES: ServiceEntry[] = [
       {
         qDe: "Welche Fahrzeuge stehen für den Flughafentransfer bereit?",
         qEn: "Which vehicles are available for airport transfers?",
-        aDe: "Wir fahren mit gepflegten Mercedes-Modellen: Business Limousine, Business Kombi sowie Großraum Limousine (V-Klasse) für bis zu 8 Personen.",
-        aEn: "Our fleet features Mercedes Business Sedans, Business Estate cars, and Spacious V-Class Vans for up to 8 guests.",
+        aDe: "Wir fahren mit gepflegten Mercedes-Modellen: Business Limousine, Business Kombi sowie Großraum Limousine (V-Klasse) für bis zu 6 Fahrgäste.",
+        aEn: "Our fleet features Mercedes Business Sedans, Business Estate cars, and Spacious V-Class Vans for up to 6 guests.",
       },
     ],
   },
@@ -349,7 +350,7 @@ export const SERVICES: ServiceEntry[] = [
       },
       {
         titleDe: "Gruppentransfers im Van",
-        titleEn: "Team Vans for up to 8",
+        titleEn: "Team Vans for up to 6",
         descDe:
           "Mercedes V-Klasse für Messeteams inklusive Präsentationsmaterial und Roll-ups.",
         descEn:
@@ -386,8 +387,8 @@ export const SERVICES: ServiceEntry[] = [
       {
         qDe: "Bieten Sie Messefahrten auch für ganze Teams an?",
         qEn: "Can you accommodate exhibition teams traveling together?",
-        aDe: "Mit unserer Großraum Limousine (V-Klasse) befördern wir bis zu 8 Personen gleichzeitig inklusive Messematerial.",
-        aEn: "Our Mercedes V-Class comfortably carries up to 8 passengers along with team luggage and presentation materials.",
+        aDe: "Mit unserer Großraum Limousine (V-Klasse) befördern wir bis zu 6 Fahrgäste gleichzeitig inklusive Messematerial.",
+        aEn: "Our Mercedes V-Class comfortably carries up to 6 passengers along with team luggage and presentation materials.",
       },
       {
         qDe: "Wie läuft die Abrechnung für Firmenkunden?",
@@ -668,11 +669,11 @@ export const SERVICES: ServiceEntry[] = [
     overviewHeadingEn:
       "Polished Mercedes-Benz Fleet for Executive & Special Occasions",
     overviewParagraphsDe: [
-      "Unser Fuhrpark umfasst Mercedes-Benz Business Limousinen (E-Klasse), geräumige Business Kombis sowie exklusive Großraum Limousinen (V-Klasse) für bis zu 8 Personen in gepflegtem Ambiente.",
+      "Unser Fuhrpark umfasst Mercedes-Benz Business Limousinen (E-Klasse), geräumige Business Kombis sowie exklusive Großraum Limousinen (V-Klasse) für bis zu 6 Fahrgäste in gepflegtem Ambiente.",
       "Sie können den Limousinenservice sowohl für einzelne Zieltransfers (z. B. Hotel – Oper – Flughafen) als auch bequem als Stundenbuchung reservieren.",
     ],
     overviewParagraphsEn: [
-      "Our fleet features Mercedes-Benz Business Sedans (E-Class), spacious Business Estates, and V-Class Executive Vans accommodating up to 8 guests in refined comfort.",
+      "Our fleet features Mercedes-Benz Business Sedans (E-Class), spacious Business Estates, and V-Class Executive Vans accommodating up to 6 guests in refined comfort.",
       "Reserve your limousine either for single transfers (e.g., hotel, Alte Oper, airport) or as a dedicated hourly standby charter.",
     ],
     features: [
@@ -731,14 +732,125 @@ export const SERVICES: ServiceEntry[] = [
       {
         qDe: "Wie viele Fahrgäste passen in die Großraum Limousine?",
         qEn: "How many passengers fit in your Spacious V-Class Van?",
-        aDe: "Bis zu 8 Fahrgäste finden in unserer Mercedes V-Klasse komfortabel Platz.",
-        aEn: "Our Mercedes V-Class accommodates up to 8 passengers in comfort.",
+        aDe: "Bis zu 6 Fahrgäste finden in unserer Mercedes V-Klasse komfortabel Platz.",
+        aEn: "Our Mercedes V-Class accommodates up to 6 passengers in comfort.",
       },
       {
         qDe: "Sind Fahrten am Wochenende oder spät nachts möglich?",
         qEn: "Are late-night and weekend limousine bookings possible?",
         aDe: "Selbstverständlich – unser Limousinen- und Chauffeurservice steht nach vorheriger Buchung 24/7 an 365 Tagen bereit.",
         aEn: "Absolutely—upon advance reservation, our limousine and chauffeur team operates 24/7 year-round.",
+      },
+    ],
+  },
+  {
+    slug: "krankenfahrten",
+    badgeDe: "Privat & Transportschein n. Absprache",
+    badgeEn: "Private & Voucher Rides by Arrangement",
+    nameDe: "Sitzende Krankenfahrten",
+    nameEn: "Seated Medical & Clinic Transfers",
+    shortDescDe:
+      "Komfortable sitzende Fahrten zu Arzt-, Klinik-, Reha- & Dialyseterminen – als Privat-/Selbstzahlerfahrt oder mit Transportschein nach telefonischer Abstimmung.",
+    shortDescEn:
+      "Calm seated rides to doctors, hospitals, dialysis, and rehab clinics—available privately or with a medical transport voucher upon phone coordination.",
+    image: "/img/Fuhrpark_V_Klasse.jpg",
+    imageAltDe: "Mercedes-Benz V-Klasse mit bequemem Einstieg für sitzende Kranken- und Klinikfahrten",
+    imageAltEn: "Mercedes-Benz V-Class providing comfortable entry for seated medical and clinic transfers",
+    schemaServiceType: "Seated Medical & Clinic Transfer",
+    seo: {
+      titleDe: "Krankenfahrten Hochtaunus, Wetterau & Frankfurt | Privat & Transportschein",
+      titleEn: "Seated Medical & Clinic Transfers | Hochtaunus, Wetterau & Frankfurt",
+      descriptionDe:
+        "Zuverlässige sitzende Krankenfahrten (Dialyse, Reha, Bestrahlung, Klinik- & Facharzttermine) im Raum Bad Homburg, Oberursel, Kronberg, Wetterau & Frankfurt – Privat oder mit Transportschein nach Absprache.",
+      descriptionEn:
+        "Calm, punctual seated medical transfers across Hochtaunus, Wetterau & Frankfurt for hospital, rehab, dialysis, and specialist visits—private billing or medical voucher by prior phone arrangement.",
+    },
+    hero: {
+      h1De: "Sitzende Krankenfahrten – Sicher & komfortabel zu Klinik, Reha & Arzt",
+      h1En: "Seated Medical & Clinic Transfers – Calm & Punctual Care Rides",
+      subtitleDe: "Privat- & Selbstzahlerfahrten sowie Fahrten mit Transportschein nach vorheriger Abstimmung.",
+      subtitleEn: "Private rides and medical transport voucher transfers arranged smoothly by telephone.",
+      introDe:
+        "Ob regelmäßige Dialyse- oder Strahlentherapie, Entlassung aus dem Krankenhaus, Facharztbesuch in Frankfurt oder Reha-Antritt in Bad Nauheim: Unsere erfahrenen Fahrer begleiten Sie ruhig, hilfsbereit und ohne Hektik direkt von Haustür bis zur Anmeldung.",
+      introEn:
+        "Whether attending regular dialysis or radiation therapy, hospital discharge, specialist consultations in Frankfurt, or rehabilitation in Bad Nauheim: our courteous chauffeurs escort you calmly right from your doorstep to reception.",
+    },
+    overviewHeadingDe:
+      "Komfortable Krankenbeförderung statt unpersönlicher Sammeltransporte",
+    overviewHeadingEn:
+      "Personal Care & Comfort Without Waiting Times",
+    overviewParagraphsDe: [
+      "Als regional etablierter Taxi- & Limousinenservice (seit über 15 Jahren, davor MyTaxi24) wissen wir, wie wichtig Pünktlichkeit, Rücksichtnahme und ein angenehmes Fahrzeug bei medizinischen Terminen sind. Sie fahren ausschließlich einzeln bzw. mit Ihrer Begleitperson in gepflegten Mercedes-Benz Fahrzeugen der mittleren Luxusklasse.",
+      "Wir führen sitzende Krankenfahrten (ohne medizinischen Liegendtransport) sowohl als unkomplizierte Privat- oder Selbstzahlerfahrt mit ordnungsgemäßer Quittung/Rechnung als auch – nach kurzer vorheriger telefonischer Abstimmung unter +49 6172 / 92 32 32 – als Fahrt mit ärztlichem Transportschein (Verordnung einer Krankenbeförderung) durch.",
+    ],
+    overviewParagraphsEn: [
+      "With over 15 years of regional service (formerly MyTaxi24), we understand that punctuality, patience, and comfort matter most when heading to medical appointments. You travel privately—with an accompanying family member if desired—in immaculately maintained Mercedes-Benz sedans or V-Class vans.",
+      "We conduct seated medical transfers (non-stretcher) both for private self-payers with itemized receipts/invoices and, following brief prior phone coordination on +49 6172 / 92 32 32, with an official doctor-issued medical transport voucher.",
+    ],
+    features: [
+      {
+        titleDe: "Privat & mit Transportschein n. Absprache",
+        titleEn: "Private & Transport Voucher (By Arrangement)",
+        descDe:
+          "Selbstzahlerfahrten jederzeit direkt online oder telefonisch buchbar; Fahrten mit Transportschein nach vorab abgestimmter Genehmigung.",
+        descEn:
+          "Book self-pay medical rides anytime or arrange covered transport-voucher trips directly with our dispatch team.",
+      },
+      {
+        titleDe: "Bequemer Einstieg & Platz für Hilfsmittel",
+        titleEn: "Comfortable Entry & Aid Storage",
+        descDe:
+          "Großzügige E-Klasse Limousine/Kombi oder V-Klasse mit hoher Sitzposition und viel Stauraum für Rollator oder Faltrollstuhl.",
+        descEn:
+          "Spacious E-Class estates and V-Class vans offering elevated seating and easy room for walkers or foldable wheelchairs.",
+      },
+      {
+        titleDe: "Serienfahrten & Klinik-Wissen",
+        titleEn: "Recurring Series & Local Clinic Knowledge",
+        descDe:
+          "Zuverlässige Abholung für Dialyse-, Bestrahlungs- und Reha-Termine u. a. in Bad Homburg, Bad Nauheim, Usingen & Frankfurt.",
+        descEn:
+          "Scheduled series rides to Bad Homburg, Bad Nauheim Kerckhoff Clinic, Usingen, and Frankfurt university hospitals.",
+      },
+      {
+        titleDe: "Rücksichtsvolle Tür-zu-Empfang-Hilfe",
+        titleEn: "Courteous Door-to-Door Assistance",
+        descDe:
+          "Fester Fahrer auf Wunsch, hilfsbereite Begleitung beim Ein- und Aussteigen sowie optional geplante Rückfahrt ohne lange Wartezeiten.",
+        descEn:
+          "Supportive assistance boarding and exiting plus coordinated return pick-ups after your appointment.",
+      },
+    ],
+    useCasesDe: [
+      "Hochtaunus-Kliniken (Bad Homburg & Usingen), Nordwest-Krankenhaus & Bürgerhospital Frankfurt",
+      "Universitätsklinikum Frankfurt, Markus-Krankenhaus & Kerckhoff-Klinik Bad Nauheim",
+      "Regelmäßige Serienfahrten zu Dialyse, Strahlentherapie, Chemotherapie & Physiotherapie",
+      "An- und Abreisen zu Kur- & Reha-Kliniken sowie ambulanten Operationen (Hin- & Rückfahrt)",
+    ],
+    useCasesEn: [
+      "Hochtaunus-Kliniken (Bad Homburg & Usingen), Nordwest-Krankenhaus & University Hospital Frankfurt",
+      "Kerckhoff Clinic & rehabilitation centers in Bad Nauheim and Königstein",
+      "Recurring dialysis, radiation, chemotherapy, and specialist appointments",
+      "Outpatient procedures and rehabilitation arrivals including pre-booked return rides",
+    ],
+    faqs: [
+      {
+        qDe: "Kann ich eine Krankenfahrt über einen Transportschein abrechnen lassen?",
+        qEn: "Can my medical ride be billed via a doctor-issued transport voucher?",
+        aDe: "Ja, neben Privat- und Selbstzahlerfahrten (mit Quittung/Rechnung) führen wir Fahrten mit ärztlicher Verordnung einer Krankenbeförderung (Transportschein) nach kurzer vorheriger telefonischer Abstimmung (+49 6172 / 92 32 32) durch.",
+        aEn: "Yes—alongside private rides with receipts, we handle rides covered by a medical transport voucher upon brief prior phone coordination on +49 6172 / 92 32 32.",
+      },
+      {
+        qDe: "Welche Art von Krankenfahrten bieten Sie an – auch mit Rollator?",
+        qEn: "What type of medical transfers do you offer, and can you fit a walker?",
+        aDe: "Wir bieten ruhige, sitzende Krankenfahrten in Mercedes E-Klasse Limousinen, Kombis sowie der V-Klasse an. Rollatoren oder klappbare Faltrollstühle laden wir problemlos ein. Medizinisch betreute Liegendtransporte führen wir jedoch nicht durch.",
+        aEn: "We provide comfortable seated medical rides in Mercedes sedans, estates, and V-Class vans with ample trunk space for walkers or folding wheelchairs (note: no stretcher or ambulance transport).",
+      },
+      {
+        qDe: "Wartet der Fahrer oder holt er mich nach dem Termin wieder ab?",
+        qEn: "Can you wait or pick me up again after the clinic visit?",
+        aDe: "Beides ist flexibel möglich: Bei kürzeren Facharztterminen warten wir gerne auf Stundenbasis oder vereinbaren für die Rückkehr eine feste Abholzeit bzw. Rückruf nach Terminende.",
+        aEn: "Both options are available: short appointments can be booked by the hour, or we schedule a dedicated return pick-up when your session concludes.",
       },
     ],
   },

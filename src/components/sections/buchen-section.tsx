@@ -2,10 +2,18 @@ import { IoMdAirplane, IoMdTrain } from "react-icons/io";
 import { IoLocationSharp, IoTime } from "react-icons/io5";
 import BuchenItem from "../buchen/buchen-item";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { PersonalInformationType, AbholortType } from "@/types";
 import { useTranslation } from "next-i18next";
 import { trackTransferSelected } from "@/lib/analytics";
+import {
+  type FlightWizardPrefill,
+  HERO_PREFILL_EVENT,
+  type HeroPrefillPayload,
+  type StationWizardPrefill,
+} from "@/lib/hero-prefill";
+import { MISSING_ROUTE_EVENT } from "../missing-route-callout";
 import type {
   HourlyClassId,
   HourlyProvision,
@@ -19,6 +27,11 @@ const IndividuellerTransfer = dynamic(
   () => import("../transfer/individueller-transfer")
 );
 
+/**
+ * Zentrale Buchungssektion mit 4-Stufen-Fortschrittsanzeige.
+ * `activeStep`: 0 = Transferart wählen, 1 = Strecke & Gepäck, 2 = Kontaktdaten, 3 = Bestätigung
+ * `transfer`:   0 = Flughafen, 1 = Bahnhof, 2 = Individueller Transfer, 3 = Stundenbuchung
+ */
 const BuchenSection = ({
   defaultCity,
   embeddedOnCityPage = false,
@@ -37,13 +50,22 @@ const BuchenSection = ({
   hourlySelectionNonce?: number;
   idOverride?: string;
 }) => {
+  const router = useRouter();
   const { t, i18n } = useTranslation("common");
   const isEn = i18n.language === "en";
 
+  // Auf Ortsseiten (defaultCity) oder direkten Modus-Seiten Schritt 0 überspringen
   const [activeStep, setActiveStep] = useState(
     defaultCity || typeof defaultTransfer === "number" ? 1 : 0
   );
   const [transfer, setTransfer] = useState<number>(defaultTransfer ?? 0);
+  const [customRoutePrefill, setCustomRoutePrefill] = useState<string>("");
+  const [customRouteNonce, setCustomRouteNonce] = useState<number>(0);
+  // Getrennte Prefill-States für Flughafen- bzw. Bahnhof-Wizard (von HomeSection befüllt)
+  const [heroFlightPrefill, setHeroFlightPrefill] =
+    useState<FlightWizardPrefill | null>(null);
+  const [heroStationPrefill, setHeroStationPrefill] =
+    useState<StationWizardPrefill | null>(null);
 
   const [personalInformation, setPersonalInformation] =
     useState<PersonalInformationType>({
@@ -56,12 +78,83 @@ const BuchenSection = ({
       nachricht: "",
     });
 
+  // Öffnet den individuellen Transfer-Wizard (z. B. nach Klick auf "Ihre Strecke fehlt?")
+  const openCustomRoute = (prefill?: string) => {
+    setCustomRoutePrefill(prefill?.trim() || "");
+    setCustomRouteNonce((n) => n + 1);
+    setTransfer(2);
+    setActiveStep(1);
+    trackTransferSelected("individual", defaultCity);
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        document
+          .getElementById("wizard-form-top")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  };
+
+  // Bei erneuter Stundenpaket-Auswahl auf /stundenbuchung Formular auf Schritt 1 fokussieren
   useEffect(() => {
     if (hourlySelectionNonce > 0) {
       setTransfer(3);
       setActiveStep(1);
     }
   }, [hourlySelectionNonce]);
+
+  // Globale Browser-Events für "Strecke fehlt?" und "Hero-Festpreisrechner -> Jetzt buchen"
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleCustomRouteEvent = (event: Event) => {
+      const customEvt = event as CustomEvent<{ route?: string }>;
+      openCustomRoute(customEvt.detail?.route);
+    };
+    const handleHeroPrefill = (event: Event) => {
+      const detail = (event as CustomEvent<HeroPrefillPayload>).detail;
+      if (!detail) return;
+      if (detail.destination === "Flughafen") {
+        setHeroFlightPrefill({
+          abholort: detail.abholort,
+          fahrzeug: detail.fahrzeug,
+          nonce: detail.nonce,
+        });
+        setTransfer(0);
+        setActiveStep(1);
+        trackTransferSelected("flughafen", detail.abholort);
+      } else {
+        setHeroStationPrefill({
+          abholort: detail.abholort,
+          station:
+            detail.destination === "Hauptbahnhof"
+              ? "Frankfurter Hauptbahnhof"
+              : "Frankfurter Südbahnhof",
+          fahrzeug: detail.fahrzeug,
+          nonce: detail.nonce,
+        });
+        setTransfer(1);
+        setActiveStep(1);
+        trackTransferSelected("bahnhof", detail.abholort);
+      }
+    };
+    window.addEventListener(MISSING_ROUTE_EVENT, handleCustomRouteEvent);
+    window.addEventListener(HERO_PREFILL_EVENT, handleHeroPrefill);
+    return () => {
+      window.removeEventListener(MISSING_ROUTE_EVENT, handleCustomRouteEvent);
+      window.removeEventListener(HERO_PREFILL_EVENT, handleHeroPrefill);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Unterstützt direkte URL-Einstiege von Unterseiten wie /?transfer=individual&route=...
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (router.query.transfer === "individual") {
+      const qRoute =
+        typeof router.query.route === "string" ? router.query.route : "";
+      openCustomRoute(qRoute);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.transfer, router.query.route]);
 
   const changeTransfer = (selected: 0 | 1 | 2 | 3) => {
     setTransfer(selected);
@@ -77,6 +170,7 @@ const BuchenSection = ({
     trackTransferSelected(kind, defaultCity);
   };
 
+  // Personendaten zurücksetzen, wenn der Nutzer zurück zur Transferart-Auswahl geht
   useEffect(() => {
     if (activeStep === 0) {
       setPersonalInformation({
@@ -171,6 +265,8 @@ const BuchenSection = ({
           personalInformation={personalInformation}
           setPersonalInformation={setPersonalInformation}
           defaultAbholort={defaultCity}
+          heroPrefill={heroFlightPrefill}
+          onRequestCustomRoute={openCustomRoute}
         />
       );
     }
@@ -181,6 +277,8 @@ const BuchenSection = ({
           setActiveStep={setActiveStep}
           personalInformation={personalInformation}
           setPersonalInformation={setPersonalInformation}
+          heroPrefill={heroStationPrefill}
+          onRequestCustomRoute={openCustomRoute}
         />
       );
     }
@@ -196,6 +294,8 @@ const BuchenSection = ({
         initialHourlyClass={defaultHourlyClass}
         initialHourlyProvision={defaultHourlyProvision}
         selectionNonce={hourlySelectionNonce}
+        prefillRoute={customRoutePrefill}
+        customRouteNonce={customRouteNonce}
       />
     );
   }
@@ -218,11 +318,14 @@ const BuchenSection = ({
       className={`w-full scroll-mt-32 text-white ${
         embeddedOnCityPage
           ? "rounded-2xl border border-white/10 bg-[#111216] p-4 sm:p-8"
-          : "bg-[#0B0D12] px-4 py-12 sm:px-6 lg:px-8 lg:py-16"
+          : "border-b border-white/10 bg-[#0B0D12] px-4 py-12 sm:px-6 lg:px-8 lg:py-16"
       }`}
       id={idOverride ?? t("nav-buchen")!}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8">
+      <div
+        id="wizard-form-top"
+        className="mx-auto flex max-w-6xl scroll-mt-24 flex-col gap-8 lg:scroll-mt-28"
+      >
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
           {t("index.wizard-ansicht-title")}
         </h2>

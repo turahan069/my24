@@ -8,7 +8,6 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import {
   IoAirplaneOutline,
   IoArrowForward,
-  IoCallOutline,
   IoCarSportOutline,
   IoCheckmarkCircle,
   IoChevronDown,
@@ -24,14 +23,17 @@ import Navbar from "@/components/navbar";
 import BuchenSection from "@/components/sections/buchen-section";
 import Footer from "@/components/footer/footer";
 import PhoneButton from "@/components/phone-button";
-import { WhatsAppBanner } from "@/components/whatsapp-banner";
+import {
+  PhoneCtaPill,
+  WhatsAppBanner,
+  WhatsAppCtaPill,
+} from "@/components/whatsapp-banner";
 import SeoHead, { SITE_URL } from "@/components/seo/seo-head";
 import {
   CITIES,
   getCityBySlug,
   type EnrichedCityEntry,
 } from "@/data/cities";
-import { trackContactConversion } from "@/lib/analytics";
 
 type NearbyCityCard = {
   slug: string;
@@ -334,16 +336,8 @@ export default function CityTransferPage({
                     <IoArrowForward className="h-4 w-4" />
                   </a>
 
-                  <a
-                    href="tel:+496172923232"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      trackContactConversion("phone", "tel:+496172923232");
-                    }}
-                    className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
-                    <IoCallOutline className="h-4 w-4 text-neutral-200" />
-                    <span className="tabular-nums">+49 6172 / 92 32 32</span>
-                  </a>
+                  <PhoneCtaPill />
+                  <WhatsAppCtaPill contextHint={city.displayName} />
                 </div>
               </div>
 
@@ -458,13 +452,13 @@ export default function CityTransferPage({
                 <div className="mt-4 rounded-xl border border-white/10 bg-[#10131B] p-4">
                   <h3 className="text-sm font-bold text-white">
                     {isEn
-                      ? `Airport Transfer, Taxi & Shuttle from ${city.displayName}`
-                      : `Flughafentransfer, Taxi & Shuttle ab ${city.displayName}`}
+                      ? `Limousine & Airport Transfer from ${city.displayName}`
+                      : `Limousinenservice & Flughafentransfer ab ${city.displayName}`}
                   </h3>
                   <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
                     {isEn
-                      ? `Your private airport taxi and direct shuttle from ${city.displayName} (ZIP ${city.postalCodes.join(", ")}) to Frankfurt Airport (FRA Terminal 1 & 3) – fixed fare €${city.prices.flughafen}, 24/7 pickup without taxameter surcharges.`
-                      : `Ihr zuverlässiger Flughafentransfer, Ihr komfortables Flughafen-Taxi und der private Airport-Shuttle ab ${city.displayName} (PLZ ${city.postalCodes.join(", ")}) direkt zu Terminal 1 & 3 in Frankfurt (FRA) – garantierter Festpreis ab ${city.prices.flughafen} € ohne Taxameter.`}
+                      ? `Your private driving service, discreet airport taxi alternative and direct shuttle from ${city.displayName} (ZIP ${city.postalCodes.join(", ")}) to Frankfurt Airport (FRA Terminal 1 & 3) – fixed fare €${city.prices.flughafen}, 24/7 pickup without taxameter surcharges.`
+                      : `Ihr zuverlässiger Flughafentransfer, Ihre komfortable Flughafen-Taxi-Alternative und der private Shuttle-Service ab ${city.displayName} (PLZ ${city.postalCodes.join(", ")}) direkt zu Terminal 1 & 3 in Frankfurt (FRA) – garantierter Festpreis ab ${city.prices.flughafen} € ohne Taxameter.`}
                   </p>
                 </div>
               </div>
@@ -712,7 +706,7 @@ export default function CityTransferPage({
                 <h2 className="text-xl font-extrabold text-white">
                   {isEn
                     ? "Nearby Airport Transfer Areas"
-                    : "Weitere Flughafentransfer-, Taxi- & Shuttle-Gebiete"}
+                    : "Weitere Flughafentransfer-Gebiete in der Nähe"}
                 </h2>
                 <p className="mt-1 text-sm text-neutral-300">
                   {isEn
@@ -724,7 +718,9 @@ export default function CityTransferPage({
                 href="/flughafentransfer"
                 className="inline-flex min-h-[42px] items-center gap-1.5 rounded-full bg-[#0071E3] px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98] sm:text-sm">
                 <span>
-                  {isEn ? "All 17 Locations" : "Alle 17 Orte ansehen"}
+                  {isEn
+                    ? `All ${CITIES.length} Locations`
+                    : `Alle ${CITIES.length} Orte ansehen`}
                 </span>
                 <IoArrowForward className="h-4 w-4" />
               </Link>
@@ -746,8 +742,8 @@ export default function CityTransferPage({
                   </div>
                   <div className="mt-1 text-xs text-neutral-400">
                     {isEn
-                      ? `Airport Transfer & Taxi · ca. ${near.distanceAirportKm} km`
-                      : `Flughafentransfer & Taxi · ca. ${near.distanceAirportKm} km`}
+                      ? `Airport Transfer · ca. ${near.distanceAirportKm} km`
+                      : `Flughafentransfer · ca. ${near.distanceAirportKm} km`}
                   </div>
                 </Link>
               ))}

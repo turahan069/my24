@@ -1,10 +1,67 @@
 import { useTranslation } from "next-i18next";
-import { IoArrowForward, IoLogoWhatsapp } from "react-icons/io5";
+import { IoArrowForward, IoCallOutline, IoLogoWhatsapp } from "react-icons/io5";
 
 import { trackContactConversion } from "@/lib/analytics";
 
-const WHATSAPP_PHONE_DISPLAY = "+49 160 / 711 31 83";
-const WHATSAPP_PHONE_E164 = "%2B491607113183";
+export const WHATSAPP_PHONE_DISPLAY = "+49 160 / 711 31 83";
+export const WHATSAPP_PHONE_E164 = "%2B491607113183";
+export const DISPATCH_PHONE_DISPLAY = "+49 6172 / 92 32 32";
+export const DISPATCH_PHONE_HREF = "tel:+496172923232";
+
+export function useWhatsAppUrl(contextHint?: string): string {
+  const { t } = useTranslation("common");
+  const message =
+    (contextHint
+      ? t("whatsapp-banner.context-message", { context: contextHint })
+      : t("whatsapp-banner.default-message")) || "";
+  return `https://api.whatsapp.com/send/?phone=${WHATSAPP_PHONE_E164}&text=${encodeURIComponent(
+    message
+  )}&type=phone_number&app_absent=0`;
+}
+
+/**
+ * Standardised phone pill matching the blue-CTA + phone + WhatsApp action group.
+ */
+export function PhoneCtaPill({ className = "" }: { className?: string }) {
+  return (
+    <a
+      href={DISPATCH_PHONE_HREF}
+      onClick={(e) => {
+        e.preventDefault();
+        trackContactConversion("phone", DISPATCH_PHONE_HREF);
+      }}
+      className={`inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12] ${className}`}
+    >
+      <IoCallOutline className="h-4 w-4 shrink-0 text-neutral-200" aria-hidden="true" />
+      <span className="tabular-nums">{DISPATCH_PHONE_DISPLAY}</span>
+    </a>
+  );
+}
+
+/**
+ * Standardised WhatsApp pill matching the blue-CTA + phone + WhatsApp action group.
+ */
+export function WhatsAppCtaPill({
+  contextHint,
+  className = "",
+}: {
+  contextHint?: string;
+  className?: string;
+}) {
+  const whatsappUrl = useWhatsAppUrl(contextHint);
+  return (
+    <a
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => trackContactConversion("whatsapp", whatsappUrl, true)}
+      className={`inline-flex min-h-[46px] items-center gap-2 rounded-full border border-[#25D366]/45 bg-[#25D366]/15 px-4 py-2.5 text-sm font-medium text-white transition hover:border-[#25D366]/80 hover:bg-[#25D366]/25 ${className}`}
+    >
+      <IoLogoWhatsapp className="h-4 w-4 shrink-0 text-[#25D366]" aria-hidden="true" />
+      <span>WhatsApp</span>
+    </a>
+  );
+}
 
 export interface WhatsAppBannerProps {
   /** Optional city or service name appended to the pre-filled WhatsApp message. */

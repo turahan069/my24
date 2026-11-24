@@ -1,40 +1,186 @@
-import { Abholorte, TransferArten, Fahrzeuge, TransferArtenEN } from "@/data";
-import type {
-  AbholortType,
-  TransportArtType,
-  FahrzeugType,
-  PersonalInformationType,
-} from "@/types";
-import { Listbox, Switch } from "@headlessui/react";
-import DateTimePicker from "@/components/date-time-picker";
+import { useEffect, useRef, useState } from "react";
+import { Listbox } from "@headlessui/react";
 import { motion } from "framer-motion";
-import moment from "moment";
-import { Moment } from "moment";
-import { useEffect, useState } from "react";
+import moment, { type Moment } from "moment";
+import { useTranslation } from "next-i18next";
 import { BiMapPin } from "react-icons/bi";
 import { BsChevronDown, BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import { IoLocationOutline, IoCheckmark } from "react-icons/io5";
-import { Preise } from "@/data";
-import { useTranslation } from "next-i18next";
+import { IoLocationOutline, IoShieldCheckmarkOutline } from "react-icons/io5";
+import { MdSwapHoriz } from "react-icons/md";
+
+import DateTimePicker from "@/components/date-time-picker";
+import { Abholorte, Fahrzeuge, Preise } from "@/data";
+import { trackBookingSubmit, trackWizardStep } from "@/lib/analytics";
+import {
+  getVehicleSurcharge,
+  getVehicleTier,
+  resolveRecommendedVehicle,
+  type StationWizardPrefill,
+} from "@/lib/hero-prefill";
+import type {
+  AbholortType,
+  FahrzeugType,
+  PersonalInformationType,
+  TransportArtType,
+} from "@/types";
+import submitForm from "@/utils";
 import { AddressModal } from "../address-modal";
 import { AddressPromptButton } from "../address-prompt-button";
 import LuggageSection, { type LuggageMode } from "../luggage-section";
-import Toast from "../toast";
+import { MissingRouteCallout } from "../missing-route-callout";
 import ReturnTripToggle from "../return-trip-toggle";
-import submitForm from "@/utils";
-import { trackBookingSubmit, trackWizardStep } from "@/lib/analytics";
+import Toast from "../toast";
+import {
+  BookingTypeSelector,
+  FieldErrorText,
+  getContactMissingItems,
+  getRouteEstimate,
+  MissingChecklistBanner,
+  type MissingFieldItem,
+  PersonalDataFields,
+  PrivacyConsentCard,
+  RequiredLegend,
+  RequiredStar,
+  scrollToMissingField,
+  scrollToWizardTop,
+  SummaryAsideVehicleMini,
+  SummaryBlockCard,
+  SummaryPersonalDetails,
+  SummaryVehicleDisplay,
+} from "./wizard-ui";
 
 const TRAIN_STATIONS = [
   "Frankfurter Hauptbahnhof",
   "Frankfurter Fernbahnhof",
   "Frankfurter Südbahnhof",
-];
+] as const;
 
-const BahnhofTransfer = ({
+type StationType = (typeof TRAIN_STATIONS)[number];
+type CityOrStation = AbholortType | StationType;
+type SummarySectionKey = "route" | "details" | "contact";
+
+type TransportState = {
+  abholort: CityOrStation | null;
+  abholortAdresse: { strasse: string; hausnummer: string };
+  zielort: CityOrStation | null;
+  zielortAdresse: { strasse: string; hausnummer: string };
+  hinreiseDatum: Moment | null;
+  rueckreiseDatum: Moment | null;
+  abholortRueckreise: CityOrStation | null;
+  zielortRueckreise: CityOrStation | null;
+  abholortRueckreiseAdresse: { strasse: string; hausnummer: string };
+  zielortRueckreiseAdresse: { strasse: string; hausnummer: string };
+  koffer: number;
+  handgepaeck: number;
+  personen: number;
+  art: TransportArtType | null;
+  fahrzeug: FahrzeugType | null;
+  rueckReise: boolean;
+};
+
+function isTrainStation(location: CityOrStation | null): boolean {
+  return (
+    location !== null &&
+    (TRAIN_STATIONS as readonly string[]).includes(location)
+  );
+}
+
+function hasValidAddress(
+  location: CityOrStation | null,
+  addr: { strasse: string; hausnummer: string }
+): boolean {
+  if (!location) return false;
+  if (isTrainStation(location)) return true;
+  return addr.strasse.trim() !== "" && addr.hausnummer.trim() !== "";
+}
+
+function formatLocationWithStreet(
+  location: CityOrStation | null,
+  addr: { strasse: string; hausnummer: string }
+): string {
+  if (!location) return "—";
+  if (isTrainStation(location)) return location;
+  const street = `${addr.strasse} ${addr.hausnummer}`.trim();
+  return street ? `${location}, ${street}` : location;
+}
+
+/**
+ * Berechnet den Grundpreis (Limousine) für eine einfache Bahnhof-Strecke.
+ * Hinweis: Der Frankfurter Fernbahnhof liegt am Flughafen und nutzt daher den Flughafen-Tarif.
+ */
+function computeStationLegPrice(
+  from: CityOrStation | null,
+  to: CityOrStation | null
+): number {
+  if (!from || !to) return 0;
+  if (
+    from === "Frankfurter Fernbahnhof" ||
+    to === "Frankfurter Fernbahnhof"
+  ) {
+    return (
+      (Preise.find((e) => e.Abfahrt === from)?.Flughafen || 0) +
+      (Preise.find((e) => e.Abfahrt === to)?.Flughafen || 0)
+    );
+  }
+  if (
+    from === "Frankfurter Hauptbahnhof" ||
+    to === "Frankfurter Hauptbahnhof"
+  ) {
+    return (
+      (Preise.find((e) => e.Abfahrt === from)?.Hauptbahnhof || 0) +
+      (Preise.find((e) => e.Abfahrt === to)?.Hauptbahnhof || 0)
+    );
+  }
+  if (
+    from === "Frankfurter Südbahnhof" ||
+    to === "Frankfurter Südbahnhof"
+  ) {
+    return (
+      (Preise.find((e) => e.Abfahrt === from)?.Suedbahnhof || 0) +
+      (Preise.find((e) => e.Abfahrt === to)?.Suedbahnhof || 0)
+    );
+  }
+  return 0;
+}
+
+const INITIAL_TRANSPORT: TransportState = {
+  abholort: null,
+  abholortAdresse: { strasse: "", hausnummer: "" },
+  zielort: null,
+  zielortAdresse: { strasse: "", hausnummer: "" },
+  hinreiseDatum: null,
+  rueckreiseDatum: null,
+  abholortRueckreise: null,
+  zielortRueckreise: null,
+  abholortRueckreiseAdresse: { strasse: "", hausnummer: "" },
+  zielortRueckreiseAdresse: { strasse: "", hausnummer: "" },
+  koffer: 0,
+  handgepaeck: 0,
+  personen: 1,
+  art: null,
+  fahrzeug: "Business Limousine",
+  rueckReise: false,
+};
+
+/** Initialzustand für den Bahnhof-Wizard inkl. optionaler Vorauswahl aus dem Hero-Rechner */
+function makeInitialStationTransport(
+  heroPrefill?: StationWizardPrefill | null
+): TransportState {
+  return {
+    ...INITIAL_TRANSPORT,
+    abholort: heroPrefill?.abholort ?? null,
+    zielort: heroPrefill?.station ?? null,
+    fahrzeug: heroPrefill?.fahrzeug ?? "Business Limousine",
+  };
+}
+
+export default function BahnhofTransfer({
   activeStep,
   setActiveStep,
   personalInformation,
   setPersonalInformation,
+  heroPrefill,
+  onRequestCustomRoute,
 }: {
   personalInformation: PersonalInformationType;
   setPersonalInformation: React.Dispatch<
@@ -42,96 +188,101 @@ const BahnhofTransfer = ({
   >;
   activeStep: number;
   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-}) => {
-  const [transportInformation, setTransportInformation] = useState<{
-    abholort:
-    | AbholortType
-    | "Frankfurter Hauptbahnhof"
-    | "Frankfurter Fernbahnhof"
-    | "Frankfurter Südbahnhof"
-    | null;
-    abholortAdresse: {
-      strasse: string;
-      hausnummer: string;
-    };
-    zielort:
-    | AbholortType
-    | "Frankfurter Hauptbahnhof"
-    | "Frankfurter Fernbahnhof"
-    | "Frankfurter Südbahnhof"
-    | null;
-    zielortAdresse: {
-      strasse: string;
-      hausnummer: string;
-    };
-    hinreiseDatum: Moment | null;
-    rueckreiseDatum: Moment | null;
-    abholortRueckreise:
-    | AbholortType
-    | "Frankfurter Hauptbahnhof"
-    | "Frankfurter Fernbahnhof"
-    | "Frankfurter Südbahnhof"
-    | null;
-    zielortRueckreise:
-    | AbholortType
-    | "Frankfurter Hauptbahnhof"
-    | "Frankfurter Fernbahnhof"
-    | "Frankfurter Südbahnhof"
-    | null;
-    abholortRueckreiseAdresse: {
-      strasse: string;
-      hausnummer: string;
-    };
-    zielortRueckreiseAdresse: {
-      strasse: string;
-      hausnummer: string;
-    };
-    koffer: number;
-    handgepaeck: number;
-    personen: number;
-    art: TransportArtType | null;
-    fahrzeug: FahrzeugType | null;
-    rueckReise: boolean;
-  }>({
-    abholort: null,
-    abholortAdresse: {
-      strasse: "",
-      hausnummer: "",
-    },
-    zielort: null,
-    zielortAdresse: {
-      strasse: "",
-      hausnummer: "",
-    },
-    hinreiseDatum: null,
-    rueckreiseDatum: null,
-    abholortRueckreise: null,
-    zielortRueckreise: null,
-    abholortRueckreiseAdresse: {
-      strasse: "",
-      hausnummer: "",
-    },
-    zielortRueckreiseAdresse: {
-      strasse: "",
-      hausnummer: "",
-    },
-    koffer: 0,
-    handgepaeck: 0,
-    personen: 1,
-    art: null,
-    fahrzeug: "Business Limousine",
-    rueckReise: false,
-  });
+  heroPrefill?: StationWizardPrefill | null;
+  onRequestCustomRoute?: (prefill?: string) => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === "en";
 
+  const [transportInformation, setTransportInformation] =
+    useState<TransportState>(() => makeInitialStationTransport(heroPrefill));
+  // Speichert die gewählte Mindest-Fahrzeugklasse, damit manuelle/Hero-Upgrades erhalten bleiben
+  const minVehicleTierRef = useRef<number>(
+    heroPrefill ? getVehicleTier(heroPrefill.fahrzeug) : 0
+  );
+  // Verhindert, dass derselbe Hero-Prefill nach dem dynamischen Erst-Mount erneut überschreibt
+  const appliedPrefillNonceRef = useRef<number>(heroPrefill?.nonce ?? 0);
+  const [luggageMode, setLuggageMode] = useState<LuggageMode>("hand");
   const [datenErklaerung, setDatenErklaerung] = useState(false);
-
+  const [abgeschickt, setAbgeschickt] = useState(false);
   const [isToastOpen, setIsToastOpen] = useState(false);
 
-  const { t, i18n } = useTranslation();
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>(
+    {}
+  );
+  const [openSummaryEditors, setOpenSummaryEditors] = useState<
+    Record<SummarySectionKey, boolean>
+  >({
+    route: false,
+    details: false,
+    contact: false,
+  });
 
-  const [abgeschickt, setAbgeschickt] = useState(false);
+  const [isAbholortModalOpen, setIsAbholortModalOpen] = useState(false);
+  const [isZielortModalOpen, setIsZielortModalOpen] = useState(false);
+  const [isAbholortRueckreiseModalOpen, setIsAbholortRueckreiseModalOpen] =
+    useState(false);
+  const [isZielortRueckreiseModalOpen, setIsZielortRueckreiseModalOpen] =
+    useState(false);
 
-  const [luggageMode, setLuggageMode] = useState<LuggageMode>("hand");
+  function markTouched(key: string) {
+    setTouched((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+  }
+
+  // Übernimmt nachträgliche Änderungen aus dem Hero-Rechner bei bereits geöffnetem Bahnhof-Formular
+  useEffect(() => {
+    if (!heroPrefill || heroPrefill.nonce === appliedPrefillNonceRef.current) {
+      return;
+    }
+    appliedPrefillNonceRef.current = heroPrefill.nonce;
+    minVehicleTierRef.current = getVehicleTier(heroPrefill.fahrzeug);
+    setTransportInformation((prev) => ({
+      ...prev,
+      abholort: heroPrefill.abholort,
+      // Bestehende Straßenangabe nur zurücksetzen, wenn ein neuer Abholort ausgewählt wurde
+      abholortAdresse:
+        prev.abholort === heroPrefill.abholort
+          ? prev.abholortAdresse
+          : { strasse: "", hausnummer: "" },
+      zielort: heroPrefill.station,
+      zielortAdresse: { strasse: "", hausnummer: "" },
+      fahrzeug: resolveRecommendedVehicle({
+        koffer: prev.koffer,
+        handgepaeck: prev.handgepaeck,
+        personen: prev.personen,
+        minTier: minVehicleTierRef.current,
+      }),
+    }));
+  }, [heroPrefill]);
+
+  // Ermittelt die passende Fahrzeugklasse je Gepäck/Personen (respektiert minTier als Untergrenze)
+  useEffect(() => {
+    setTransportInformation((prev) => {
+      const nextVehicle = resolveRecommendedVehicle({
+        koffer: prev.koffer,
+        handgepaeck: prev.handgepaeck,
+        personen: prev.personen,
+        minTier: minVehicleTierRef.current,
+      });
+      if (prev.fahrzeug === nextVehicle) return prev;
+      return { ...prev, fahrzeug: nextVehicle };
+    });
+  }, [
+    transportInformation.koffer,
+    transportInformation.handgepaeck,
+    transportInformation.personen,
+  ]);
+
+  useEffect(() => {
+    setTransportInformation((prev) => {
+      if (isEn && prev.art === "Anfrage") return { ...prev, art: "Request" };
+      if (isEn && prev.art === "Bestellung") return { ...prev, art: "Order" };
+      if (!isEn && prev.art === "Request") return { ...prev, art: "Anfrage" };
+      if (!isEn && prev.art === "Order") return { ...prev, art: "Bestellung" };
+      return prev;
+    });
+  }, [isEn]);
 
   function handleLuggageModeChange(mode: LuggageMode) {
     setLuggageMode(mode);
@@ -142,517 +293,99 @@ const BahnhofTransfer = ({
   }
 
   function formatDate(date: Moment | null) {
-    if (!date) return null;
+    if (!date) return "—";
     return `${date.format("DD.MM.YYYY, HH:mm")} Uhr`;
   }
 
   function resetForm() {
-    setTransportInformation({
-      abholort: null,
-      abholortAdresse: {
-        strasse: "",
-        hausnummer: "",
-      },
-      zielort: null,
-      zielortAdresse: {
-        strasse: "",
-        hausnummer: "",
-      },
-      hinreiseDatum: null,
-      rueckreiseDatum: null,
-      abholortRueckreise: null,
-      zielortRueckreise: null,
-      abholortRueckreiseAdresse: {
-        strasse: "",
-        hausnummer: "",
-      },
-      zielortRueckreiseAdresse: {
-        strasse: "",
-        hausnummer: "",
-      },
-      koffer: 0,
-      handgepaeck: 0,
-      personen: 1,
-      art: null,
-      fahrzeug: "Business Limousine",
-      rueckReise: false,
-    });
+    minVehicleTierRef.current = 0;
+    setTransportInformation(INITIAL_TRANSPORT);
     setLuggageMode("hand");
+    setDatenErklaerung(false);
     setAbgeschickt(false);
+    setTouched({});
+    setAttemptedSteps({});
+    setOpenSummaryEditors({ route: false, details: false, contact: false });
   }
 
-  useEffect(() => {
-    if (
-      transportInformation.koffer <= 2 &&
-      transportInformation.handgepaeck <= 2 &&
-      transportInformation.personen <= 4
-    ) {
-      if (transportInformation.fahrzeug !== "Business Limousine")
-        setTransportInformation({
-          ...transportInformation,
-          fahrzeug: "Business Limousine",
-        });
+  function getPriceBreakdown() {
+    const outbound = computeStationLegPrice(
+      transportInformation.abholort,
+      transportInformation.zielort
+    );
+    const returnTrip = transportInformation.rueckReise
+      ? computeStationLegPrice(
+          transportInformation.abholortRueckreise,
+          transportInformation.zielortRueckreise
+        )
+      : 0;
 
-      return;
-    } else if (
-      transportInformation.koffer <= 4 &&
-      transportInformation.handgepaeck <= 4 &&
-      transportInformation.personen <= 4
-    ) {
-      if (transportInformation.fahrzeug !== "Business Kombi")
-        setTransportInformation({
-          ...transportInformation,
-          fahrzeug: "Business Kombi",
-        });
+    // Klassen-Aufpreis fällt pro gebuchter Teilstrecke an (bei Rückfahrt × 2)
+    const perLegSurcharge = getVehicleSurcharge(transportInformation.fahrzeug);
+    const surcharge =
+      perLegSurcharge * (transportInformation.rueckReise ? 2 : 1);
 
-      return;
-    }
-
-    if (transportInformation.fahrzeug !== "Großraum Limousine")
-      setTransportInformation({
-        ...transportInformation,
-        fahrzeug: "Großraum Limousine",
-      });
-  }, [transportInformation]);
-
-  useEffect(() => {
-    if (i18n.language === "en") {
-      if (transportInformation.art === "Anfrage")
-        setTransportInformation((e) => {
-          return {
-            ...e,
-            art: "Request",
-          };
-        });
-      else if (transportInformation.art === "Bestellung")
-        setTransportInformation((e) => {
-          return {
-            ...e,
-            art: "Order",
-          };
-        });
-    } else if (i18n.language === "de") {
-      if (transportInformation.art === "Request")
-        setTransportInformation((e) => {
-          return {
-            ...e,
-            art: "Anfrage",
-          };
-        });
-      else if (transportInformation.art === "Order")
-        setTransportInformation((e) => {
-          return {
-            ...e,
-            art: "Bestellung",
-          };
-        });
-    }
-  }, [i18n.language, transportInformation.art]);
+    return {
+      outbound,
+      returnTrip,
+      surcharge,
+      total: (outbound + returnTrip + surcharge).toFixed(2),
+    };
+  }
 
   function getPrice() {
-
-    // Gesamtpreis
-    let price = 0;
-
-    // Hinreise-Kosten berechnen
-    if (transportInformation.abholort && transportInformation.zielort) {
-      if (
-        transportInformation.abholort === "Frankfurter Fernbahnhof" ||
-        transportInformation.zielort === "Frankfurter Fernbahnhof"
-      ) {
-        price +=
-          Preise.find((e) => e.Abfahrt === transportInformation.abholort)
-            ?.Flughafen || 0;
-        price +=
-          Preise.find((e) => e.Abfahrt === transportInformation.zielort)
-            ?.Flughafen || 0;
-      } else if (
-        transportInformation.abholort === "Frankfurter Hauptbahnhof" ||
-        transportInformation.zielort === "Frankfurter Hauptbahnhof"
-      ) {
-        price +=
-          Preise.find((e) => e.Abfahrt === transportInformation.abholort)
-            ?.Hauptbahnhof || 0;
-        price +=
-          Preise.find((e) => e.Abfahrt === transportInformation.zielort)
-            ?.Hauptbahnhof || 0;
-      } else if (
-        transportInformation.abholort === "Frankfurter Südbahnhof" ||
-        transportInformation.zielort === "Frankfurter Südbahnhof"
-      ) {
-        price +=
-          Preise.find((e) => e.Abfahrt === transportInformation.abholort)
-            ?.Suedbahnhof || 0;
-        price +=
-          Preise.find((e) => e.Abfahrt === transportInformation.zielort)
-            ?.Suedbahnhof || 0;
-      }
-    }
-
-    // Rückreise-Kosten berechnen
-    if (transportInformation.rueckReise) {
-      if (
-        transportInformation.abholortRueckreise &&
-        transportInformation.zielortRueckreise
-      ) {
-        if (
-          transportInformation.abholortRueckreise ===
-          "Frankfurter Fernbahnhof" ||
-          transportInformation.zielortRueckreise === "Frankfurter Fernbahnhof"
-        ) {
-          price +=
-            Preise.find(
-              (e) => e.Abfahrt === transportInformation.abholortRueckreise
-            )?.Flughafen || 0;
-          price +=
-            Preise.find(
-              (e) => e.Abfahrt === transportInformation.zielortRueckreise
-            )?.Flughafen || 0;
-        } else if (
-          transportInformation.abholortRueckreise ===
-          "Frankfurter Hauptbahnhof" ||
-          transportInformation.zielortRueckreise === "Frankfurter Hauptbahnhof"
-        ) {
-          price +=
-            Preise.find(
-              (e) => e.Abfahrt === transportInformation.abholortRueckreise
-            )?.Hauptbahnhof || 0;
-          price +=
-            Preise.find(
-              (e) => e.Abfahrt === transportInformation.zielortRueckreise
-            )?.Hauptbahnhof || 0;
-        } else if (
-          transportInformation.abholortRueckreise ===
-          "Frankfurter Südbahnhof" ||
-          transportInformation.zielortRueckreise === "Frankfurter Südbahnhof"
-        ) {
-          price +=
-            Preise.find(
-              (e) => e.Abfahrt === transportInformation.abholortRueckreise
-            )?.Suedbahnhof || 0;
-          price +=
-            Preise.find(
-              (e) => e.Abfahrt === transportInformation.zielortRueckreise
-            )?.Suedbahnhof || 0;
-        }
-      }
-    }
-
-    if (transportInformation.fahrzeug === "Großraum Limousine" && transportInformation.rueckReise) {
-      price += (26 * 2);
-    } else if (transportInformation.fahrzeug === "Business Kombi" && transportInformation.rueckReise) {
-      price += (2 * 2);
-    } else if (transportInformation.fahrzeug === "Großraum Limousine") {
-      price += 26;
-    } else if (transportInformation.fahrzeug === "Business Kombi") {
-      price += 2;
-    }
-
-    // Return Total-Price
-
-    return price.toFixed(2);
+    return getPriceBreakdown().total;
   }
 
-  const [isAbholortModalOpen, setIsAbholortModalOpen] = useState(false);
-  const [isZielortModalOpen, setIsZielortModalOpen] = useState(false);
-  const [isAbholortRueckreiseModalOpen, setIsAbholortRueckreiseModalOpen] =
-    useState(false);
-  const [isZielortRueckreiseModalOpen, setIsZielortRueckreiseModalOpen] =
-    useState(false);
-
-  function closeAddressModal(ziel: boolean, rueckreise: boolean) {
+  function getAbholorte(rueckreise: boolean): CityOrStation[] {
+    const cities = Abholorte as AbholortType[];
     if (!rueckreise) {
-      if (!ziel) setIsAbholortModalOpen(false);
-      else setIsZielortModalOpen(false);
+      if (transportInformation.zielort === null)
+        return [...cities, ...TRAIN_STATIONS];
+      if (isTrainStation(transportInformation.zielort)) return [...cities];
+      return [...TRAIN_STATIONS];
     }
-
-    if (rueckreise) {
-      if (!ziel) setIsAbholortRueckreiseModalOpen(false);
-      else setIsZielortRueckreiseModalOpen(false);
-    }
+    if (transportInformation.zielortRueckreise === null)
+      return [...cities, ...TRAIN_STATIONS];
+    if (isTrainStation(transportInformation.zielortRueckreise))
+      return [...cities];
+    return [...TRAIN_STATIONS];
   }
 
-  function openAddressModal(
-    e:
-      | AbholortType
-      | "Frankfurter Hauptbahnhof"
-      | "Frankfurter Fernbahnhof"
-      | "Frankfurter Südbahnhof"
-      | null,
-    ziel: boolean,
-    rueckreise: boolean
-  ) {
-    if (
-      e === "Frankfurter Hauptbahnhof" ||
-      e === "Frankfurter Fernbahnhof" ||
-      e === "Frankfurter Südbahnhof"
-    ) {
-      if (!rueckreise) {
-        if (!ziel) {
-          setTransportInformation({
-            ...transportInformation,
-            abholort: e,
-          });
-        } else {
-          setTransportInformation({
-            ...transportInformation,
-            zielort: e,
-          });
-        }
-      } else {
-        if (!ziel) {
-          setTransportInformation({
-            ...transportInformation,
-            abholortRueckreise: e,
-          });
-        } else {
-          setTransportInformation({
-            ...transportInformation,
-            zielortRueckreise: e,
-          });
-        }
-      }
-      return;
-    }
+  function getZielorte(rueckreise: boolean): CityOrStation[] {
+    const cities = Abholorte as AbholortType[];
     if (!rueckreise) {
-      if (!ziel) {
-        setTransportInformation({
-          ...transportInformation,
-          abholort: e,
-        });
-
-        setIsAbholortModalOpen(true);
-      } else {
-        setTransportInformation({
-          ...transportInformation,
-          zielort: e,
-        });
-
-        setIsZielortModalOpen(true);
-      }
-    } else {
-      if (!ziel) {
-        setTransportInformation({
-          ...transportInformation,
-          abholortRueckreise: e,
-        });
-
-        setIsAbholortRueckreiseModalOpen(true);
-      } else {
-        setTransportInformation({
-          ...transportInformation,
-          zielortRueckreise: e,
-        });
-
-        setIsZielortRueckreiseModalOpen(true);
-      }
+      if (transportInformation.abholort === null)
+        return [...cities, ...TRAIN_STATIONS];
+      if (isTrainStation(transportInformation.abholort)) return [...cities];
+      return [...TRAIN_STATIONS];
     }
+    if (transportInformation.abholortRueckreise === null)
+      return [...cities, ...TRAIN_STATIONS];
+    if (isTrainStation(transportInformation.abholortRueckreise))
+      return [...cities];
+    return [...TRAIN_STATIONS];
   }
 
-  function getAbholorte(rueckreise: boolean) {
-    if (!rueckreise) {
-      if (transportInformation.zielort === null) {
-        return [
-          "Frankfurter Hauptbahnhof",
-          "Frankfurter Fernbahnhof",
-          "Frankfurter Südbahnhof",
-          ...Abholorte,
-        ];
-      } else {
-        if (
-          transportInformation.zielort === "Frankfurter Hauptbahnhof" ||
-          transportInformation.zielort === "Frankfurter Fernbahnhof" ||
-          transportInformation.zielort === "Frankfurter Südbahnhof"
-        ) {
-          return Abholorte;
-        } else {
-          return [
-            "Frankfurter Hauptbahnhof",
-            "Frankfurter Fernbahnhof",
-            "Frankfurter Südbahnhof",
-          ];
-        }
-      }
-    }
-    if (transportInformation.zielortRueckreise === null) {
-      return [
-        "Frankfurter Hauptbahnhof",
-        "Frankfurter Fernbahnhof",
-        "Frankfurter Südbahnhof",
-        ...Abholorte,
-      ];
-    } else if (
-      transportInformation.zielortRueckreise === "Frankfurter Hauptbahnhof" ||
-      transportInformation.zielortRueckreise === "Frankfurter Fernbahnhof" ||
-      transportInformation.zielortRueckreise === "Frankfurter Südbahnhof"
-    ) {
-      return Abholorte;
-    } else {
-      return [
-        "Frankfurter Hauptbahnhof",
-        "Frankfurter Fernbahnhof",
-        "Frankfurter Südbahnhof",
-      ];
-    }
-  }
-
-  function getZielorte(rueckreise: boolean) {
-    if (!rueckreise) {
-      if (transportInformation.abholort === null) {
-        return [
-          "Frankfurter Hauptbahnhof",
-          "Frankfurter Fernbahnhof",
-          "Frankfurter Südbahnhof",
-          ...Abholorte,
-        ];
-      } else if (
-        transportInformation.abholort === "Frankfurter Hauptbahnhof" ||
-        transportInformation.abholort === "Frankfurter Fernbahnhof" ||
-        transportInformation.abholort === "Frankfurter Südbahnhof"
-      ) {
-        return Abholorte;
-      } else {
-        return [
-          "Frankfurter Hauptbahnhof",
-          "Frankfurter Fernbahnhof",
-          "Frankfurter Südbahnhof",
-        ];
-      }
-    }
-    if (transportInformation.abholortRueckreise === null) {
-      return [
-        "Frankfurter Hauptbahnhof",
-        "Frankfurter Fernbahnhof",
-        "Frankfurter Südbahnhof",
-        ...Abholorte,
-      ];
-    } else if (
-      transportInformation.abholortRueckreise === "Frankfurter Hauptbahnhof" ||
-      transportInformation.abholortRueckreise === "Frankfurter Fernbahnhof" ||
-      transportInformation.abholortRueckreise === "Frankfurter Südbahnhof"
-    ) {
-      return Abholorte;
-    } else {
-      return [
-        "Frankfurter Hauptbahnhof",
-        "Frankfurter Fernbahnhof",
-        "Frankfurter Südbahnhof",
-      ];
-    }
-  }
-
-  const currentDate = moment(new Date());
-
-  function handleAddressModalClose(ziel: boolean, rueckreise: boolean) {
-    if (!rueckreise) {
-      if (!ziel) {
-        if (
-          transportInformation.abholortAdresse.strasse === "" ||
-          transportInformation.abholortAdresse.hausnummer === ""
-        ) {
-          setTransportInformation({
-            ...transportInformation,
-            abholort: null,
-          });
-        }
-
-        closeAddressModal(ziel, rueckreise);
-      } else {
-        if (
-          transportInformation.zielortAdresse.strasse === "" ||
-          transportInformation.zielortAdresse.hausnummer === ""
-        ) {
-          setTransportInformation({
-            ...transportInformation,
-            zielort: null,
-          });
-        }
-
-        closeAddressModal(ziel, rueckreise);
-      }
-    } else {
-      if (!ziel) {
-        if (
-          transportInformation.abholortRueckreiseAdresse.strasse === "" ||
-          transportInformation.abholortRueckreiseAdresse.hausnummer === ""
-        ) {
-          setTransportInformation({
-            ...transportInformation,
-            abholortRueckreise: null,
-          });
-        }
-
-        closeAddressModal(ziel, rueckreise);
-      } else {
-        if (
-          transportInformation.zielortRueckreiseAdresse.strasse === "" ||
-          transportInformation.zielortRueckreiseAdresse.hausnummer === ""
-        ) {
-          setTransportInformation({
-            ...transportInformation,
-            zielortRueckreise: null,
-          });
-        }
-
-        closeAddressModal(ziel, rueckreise);
-      }
-    }
-  }
-
-  function getStageIsValid() {
-    switch (activeStep) {
-      default:
-        return datenErklaerung;
-      case 1:
-        return (
-          transportInformation.abholort !== null &&
-          transportInformation.zielort !== null &&
-          transportInformation.hinreiseDatum !== null &&
-          transportInformation.art !== null &&
-          transportInformation.fahrzeug !== null &&
-          (transportInformation.rueckReise
-            ? transportInformation.rueckreiseDatum !== null &&
-            transportInformation.abholortRueckreise !== null &&
-            transportInformation.zielortRueckreise !== null
-            : true)
-        );
-      case 2:
-        return (
-          personalInformation.name !== "" &&
-          personalInformation.telefon !== "" &&
-          personalInformation.email !== ""
-        );
-    }
-  }
-
-  function isModalDataValid(ziel: boolean, rueckreise: boolean) {
-    if (!rueckreise) {
-      if (!ziel)
-        return (
-          transportInformation.abholortAdresse.strasse !== "" &&
-          transportInformation.abholortAdresse.hausnummer !== ""
-        );
-
-      return (
-        transportInformation.zielortAdresse.strasse !== "" &&
-        transportInformation.zielortAdresse.hausnummer !== ""
-      );
-    } else {
-      if (!ziel)
-        return (
-          transportInformation.abholortRueckreiseAdresse.strasse !== "" &&
-          transportInformation.abholortRueckreiseAdresse.hausnummer !== ""
-        );
-
-      return (
-        transportInformation.zielortRueckreiseAdresse.strasse !== "" &&
-        transportInformation.zielortRueckreiseAdresse.hausnummer !== ""
-      );
-    }
+  function swapRoute() {
+    setTransportInformation((prev) => ({
+      ...prev,
+      abholort: prev.zielort,
+      zielort: prev.abholort,
+      abholortAdresse: { ...prev.zielortAdresse },
+      zielortAdresse: { ...prev.abholortAdresse },
+      ...(prev.rueckReise
+        ? {
+            abholortRueckreise: prev.abholort,
+            zielortRueckreise: prev.zielort,
+            abholortRueckreiseAdresse: { ...prev.abholortAdresse },
+            zielortRueckreiseAdresse: { ...prev.zielortAdresse },
+          }
+        : {}),
+    }));
   }
 
   function toggleRueckReise(value: boolean) {
-    // Beim Aktivieren die Rückfahrt automatisch mit der umgekehrten Route vorbelegen
     setTransportInformation((prev) => {
       if (!value) return { ...prev, rueckReise: false };
       return {
@@ -670,482 +403,856 @@ const BahnhofTransfer = ({
     });
   }
 
-  if (activeStep === 1)
+  function openAddressModal(
+    selectedValue: CityOrStation | null,
+    ziel: boolean,
+    rueckreise: boolean
+  ) {
+    if (!selectedValue) return;
+    const station = isTrainStation(selectedValue);
+    if (!rueckreise) {
+      if (!ziel) {
+        setTransportInformation((prev) => ({
+          ...prev,
+          abholort: selectedValue,
+          abholortAdresse: station
+            ? { strasse: "", hausnummer: "" }
+            : prev.abholortAdresse,
+        }));
+        if (!station) setIsAbholortModalOpen(true);
+      } else {
+        setTransportInformation((prev) => ({
+          ...prev,
+          zielort: selectedValue,
+          zielortAdresse: station
+            ? { strasse: "", hausnummer: "" }
+            : prev.zielortAdresse,
+        }));
+        if (!station) setIsZielortModalOpen(true);
+      }
+      return;
+    }
+
+    if (!ziel) {
+      setTransportInformation((prev) => ({
+        ...prev,
+        abholortRueckreise: selectedValue,
+        abholortRueckreiseAdresse: station
+          ? { strasse: "", hausnummer: "" }
+          : prev.abholortRueckreiseAdresse,
+      }));
+      if (!station) setIsAbholortRueckreiseModalOpen(true);
+    } else {
+      setTransportInformation((prev) => ({
+        ...prev,
+        zielortRueckreise: selectedValue,
+        zielortRueckreiseAdresse: station
+          ? { strasse: "", hausnummer: "" }
+          : prev.zielortRueckreiseAdresse,
+      }));
+      if (!station) setIsZielortRueckreiseModalOpen(true);
+    }
+  }
+
+  function closeAddressModal(ziel: boolean, rueckreise: boolean) {
+    if (!rueckreise) {
+      if (!ziel) {
+        markTouched("abholortAdresse");
+        setIsAbholortModalOpen(false);
+      } else {
+        markTouched("zielortAdresse");
+        setIsZielortModalOpen(false);
+      }
+    } else if (!ziel) {
+      markTouched("abholortRueckreiseAdresse");
+      setIsAbholortRueckreiseModalOpen(false);
+    } else {
+      markTouched("zielortRueckreiseAdresse");
+      setIsZielortRueckreiseModalOpen(false);
+    }
+  }
+
+  function isModalDataValid(ziel: boolean, rueckreise: boolean) {
+    if (!rueckreise) {
+      if (!ziel) {
+        return (
+          transportInformation.abholortAdresse.strasse.trim() !== "" &&
+          transportInformation.abholortAdresse.hausnummer.trim() !== ""
+        );
+      }
+      return (
+        transportInformation.zielortAdresse.strasse.trim() !== "" &&
+        transportInformation.zielortAdresse.hausnummer.trim() !== ""
+      );
+    }
+    if (!ziel) {
+      return (
+        transportInformation.abholortRueckreiseAdresse.strasse.trim() !== "" &&
+        transportInformation.abholortRueckreiseAdresse.hausnummer.trim() !== ""
+      );
+    }
     return (
-      <div className="flex flex-col gap-8">
-        <div className="relative grid w-full grid-flow-row grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="relative col-span-1 w-full md:col-span-2">
-            <Listbox
-              value={transportInformation.art}
-              onChange={(e) => {
-                setTransportInformation({
-                  ...transportInformation,
-                  art: e,
-                });
-              }}>
-              <Listbox.Button className={"w-full"}>
-                <div
-                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.art === null ? "border-yellow-500" : ""
-                    }`}>
-                  <div className="group flex flex-1 flex-col">
-                    <motion.span
-                      layout="position"
-                      className={
-                        "text-left " +
-                        (transportInformation.art ? "text-sm" : "text-md")
-                      }>
-                      {t("index.wizard-type")}
-                    </motion.span>
-                    <span className="text-left">
-                      {transportInformation.art}
-                    </span>
-                  </div>
-                  {!transportInformation.art ? <BsChevronDown /> : null}
-                </div>
-              </Listbox.Button>
-              <Listbox.Options
-                className={
-                  "absolute top-16 z-10 max-h-48 w-full overflow-hidden rounded-lg bg-neutral-900"
-                }>
-                <motion.div
-                  initial={{ y: -50 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -50 }}>
-                  {[
-                    ...(i18n.language === "en"
-                      ? TransferArtenEN
-                      : TransferArten),
-                  ].map((transferArt) => (
-                    <Listbox.Option
-                      className={
-                        "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                      }
-                      key={transferArt}
-                      value={transferArt}>
-                      {transferArt}
-                    </Listbox.Option>
-                  ))}
-                </motion.div>
-              </Listbox.Options>
-            </Listbox>
-          </div>
-          <ReturnTripToggle
-            checked={transportInformation.rueckReise}
-            onChange={toggleRueckReise}
-            variant="train"
-          />
-          <div className="relative w-full">
-            <Listbox
-              value={transportInformation.abholort}
-              onChange={(e) => {
-                openAddressModal(e, false, false);
-              }}>
-              <Listbox.Button className={"w-full"}>
-                <div
-                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.abholort === null
+      transportInformation.zielortRueckreiseAdresse.strasse.trim() !== "" &&
+      transportInformation.zielortRueckreiseAdresse.hausnummer.trim() !== ""
+    );
+  }
+
+  // ==========================================================
+  // Validation
+  // ==========================================================
+  function getRouteMissingItems(): MissingFieldItem[] {
+    const missing: MissingFieldItem[] = [];
+
+    if (!transportInformation.abholort) {
+      missing.push({
+        key: "abholort",
+        elementId: "wiz-field-abholort",
+        label: isEn ? "Pick-up location" : "Abholort",
+        message: isEn
+          ? "Please select a pick-up location."
+          : "Bitte wählen Sie einen Abholort aus.",
+      });
+    } else if (
+      !hasValidAddress(
+        transportInformation.abholort,
+        transportInformation.abholortAdresse
+      )
+    ) {
+      missing.push({
+        key: "abholortAdresse",
+        elementId: "wiz-field-abholort",
+        label: isEn ? "Pick-up street & no." : "Straße & Nr. (Abholort)",
+        message: isEn
+          ? "Please enter street and house number for pick-up."
+          : "Bitte noch Straße & Hausnummer über den Button darunter eingeben.",
+      });
+    }
+
+    if (!transportInformation.zielort) {
+      missing.push({
+        key: "zielort",
+        elementId: "wiz-field-zielort",
+        label: isEn ? "Drop-off location" : "Zielort",
+        message: isEn
+          ? "Please select a drop-off location."
+          : "Bitte wählen Sie einen Zielort aus.",
+      });
+    } else if (
+      !hasValidAddress(
+        transportInformation.zielort,
+        transportInformation.zielortAdresse
+      )
+    ) {
+      missing.push({
+        key: "zielortAdresse",
+        elementId: "wiz-field-zielort",
+        label: isEn ? "Drop-off street & no." : "Straße & Nr. (Zielort)",
+        message: isEn
+          ? "Please enter street and house number for drop-off."
+          : "Bitte noch Straße & Hausnummer für den Zielort eingeben.",
+      });
+    }
+
+    if (transportInformation.rueckReise) {
+      if (!transportInformation.abholortRueckreise) {
+        missing.push({
+          key: "abholortRueckreise",
+          elementId: "wiz-field-abholort-rueck",
+          label: isEn ? "Return pick-up" : "Rückreise-Abholort",
+          message: isEn
+            ? "Please select a return pick-up location."
+            : "Bitte Abholort für die Rückreise wählen.",
+        });
+      } else if (
+        !hasValidAddress(
+          transportInformation.abholortRueckreise,
+          transportInformation.abholortRueckreiseAdresse
+        )
+      ) {
+        missing.push({
+          key: "abholortRueckreiseAdresse",
+          elementId: "wiz-field-abholort-rueck",
+          label: isEn ? "Return pick-up street" : "Straße (Rückreise-Abholort)",
+          message: isEn
+            ? "Please enter street & house number for return pick-up."
+            : "Bitte Straße & Hausnummer für den Rückreise-Abholort ergänzen.",
+        });
+      }
+
+      if (!transportInformation.zielortRueckreise) {
+        missing.push({
+          key: "zielortRueckreise",
+          elementId: "wiz-field-zielort-rueck",
+          label: isEn ? "Return drop-off" : "Rückreise-Zielort",
+          message: isEn
+            ? "Please select a return drop-off location."
+            : "Bitte Zielort für die Rückreise wählen.",
+        });
+      } else if (
+        !hasValidAddress(
+          transportInformation.zielortRueckreise,
+          transportInformation.zielortRueckreiseAdresse
+        )
+      ) {
+        missing.push({
+          key: "zielortRueckreiseAdresse",
+          elementId: "wiz-field-zielort-rueck",
+          label: isEn ? "Return drop-off street" : "Straße (Rückreise-Zielort)",
+          message: isEn
+            ? "Please enter street & house number for return drop-off."
+            : "Bitte Straße & Hausnummer für den Rückreise-Zielort ergänzen.",
+        });
+      }
+    }
+
+    if (!transportInformation.hinreiseDatum) {
+      missing.push({
+        key: "hinreiseDatum",
+        elementId: "wiz-field-hinreise-datum",
+        label: transportInformation.rueckReise
+          ? isEn
+            ? "Outbound date & time"
+            : "Hinreise-Datum & Uhrzeit"
+          : isEn
+          ? "Pick-up date & time"
+          : "Abholdatum & Uhrzeit",
+        message: transportInformation.rueckReise
+          ? isEn
+            ? "Please choose date and time for your outbound trip."
+            : "Bitte wählen Sie Datum und Uhrzeit für die Hinreise."
+          : isEn
+          ? "Please choose date and time for your pick-up."
+          : "Bitte wählen Sie Datum und Uhrzeit für Ihre Abholung.",
+      });
+    }
+
+    if (
+      transportInformation.rueckReise &&
+      !transportInformation.rueckreiseDatum
+    ) {
+      missing.push({
+        key: "rueckreiseDatum",
+        elementId: "wiz-field-rueckreise-datum",
+        label: isEn ? "Return date & time" : "Rückreise-Datum & Uhrzeit",
+        message: isEn
+          ? "Please choose date and time for your return trip."
+          : "Bitte wählen Sie Datum und Uhrzeit für die Rückreise.",
+      });
+    }
+
+    return missing;
+  }
+
+  function getDetailsMissingItems(): MissingFieldItem[] {
+    const missing: MissingFieldItem[] = [];
+    if (!transportInformation.art) {
+      missing.push({
+        key: "art",
+        elementId: "wiz-field-art",
+        label: isEn ? "Booking type" : "Art der Buchung",
+        message: isEn
+          ? "Please choose Order or Inquiry."
+          : "Bitte wählen Sie „Bestellung“ oder „Anfrage“ aus.",
+      });
+    }
+    return missing;
+  }
+
+  function getAllMissingItems(step: number): MissingFieldItem[] {
+    if (step === 1) {
+      return [...getDetailsMissingItems(), ...getRouteMissingItems()];
+    }
+    if (step === 2) {
+      return getContactMissingItems(personalInformation, isEn);
+    }
+    const privacyMissing: MissingFieldItem[] = datenErklaerung
+      ? []
+      : [
+          {
+            key: "privacy",
+            elementId: "wiz-field-privacy",
+            label: isEn ? "Privacy Policy" : "Datenschutzerklärung",
+            message: isEn
+              ? "Please confirm the privacy policy before submitting."
+              : "Bitte bestätigen Sie die Datenschutzerklärung vor dem Absenden.",
+          },
+        ];
+    return [
+      ...getDetailsMissingItems(),
+      ...getRouteMissingItems(),
+      ...getContactMissingItems(personalInformation, isEn),
+      ...privacyMissing,
+    ];
+  }
+
+  const currentMissing = getAllMissingItems(activeStep);
+  const isStepAttempted = Boolean(attemptedSteps[activeStep]);
+
+  function getVisibleError(key: string): string | undefined {
+    const item = getAllMissingItems(3).find((m) => m.key === key);
+    if (!item) return undefined;
+    if (isStepAttempted || touched[key]) return item.message;
+    return undefined;
+  }
+
+  function getFieldBorderClass(
+    key: string,
+    isRequiredEmpty: boolean,
+    isRing = false
+  ): string {
+    const err = getVisibleError(key);
+    if (err) return isRing ? "ring-red-500" : "border-red-500";
+    if (isRequiredEmpty) {
+      return isRing ? "ring-yellow-500" : "border-yellow-500";
+    }
+    return isRing ? "ring-[#257BCC]" : "border-[#257BCC]";
+  }
+
+  function changeStepAndScrollTop(nextStep: number) {
+    setActiveStep(nextStep);
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => scrollToWizardTop());
+    }
+  }
+
+  function handleNextClick() {
+    if (currentMissing.length > 0) {
+      setAttemptedSteps((prev) => ({ ...prev, [activeStep]: true }));
+      scrollToMissingField(currentMissing[0].elementId);
+      return;
+    }
+    const nextStep = activeStep + 1;
+    trackWizardStep("bahnhof", nextStep);
+    changeStepAndScrollTop(nextStep);
+  }
+
+  function handleSubmitClick() {
+    const routeErr = getRouteMissingItems();
+    const detailsErr = getDetailsMissingItems();
+    const contactErr = getContactMissingItems(personalInformation, isEn);
+
+    if (currentMissing.length > 0) {
+      setAttemptedSteps((prev) => ({
+        ...prev,
+        1: true,
+        2: true,
+        3: true,
+      }));
+      if (routeErr.length > 0 || detailsErr.length > 0 || contactErr.length > 0) {
+        setOpenSummaryEditors((prev) => ({
+          route: prev.route || routeErr.length > 0,
+          details: prev.details || detailsErr.length > 0,
+          contact: prev.contact || contactErr.length > 0,
+        }));
+      }
+      requestAnimationFrame(() =>
+        scrollToMissingField(currentMissing[0].elementId)
+      );
+      return;
+    }
+
+    submitForm(
+      "bahnhof",
+      transportInformation,
+      personalInformation,
+      i18n.language
+    );
+    trackBookingSubmit({
+      transferType: "bahnhof",
+      bookingMode: transportInformation.art,
+      pickup: transportInformation.abholort,
+      dropoff: transportInformation.zielort,
+      roundTrip: transportInformation.rueckReise,
+      vehicle: transportInformation.fahrzeug,
+      priceEur: parseFloat(getPrice()) || 0,
+    });
+    setIsToastOpen(true);
+    setAbgeschickt(true);
+    scrollToWizardTop();
+    setTimeout(() => {
+      setActiveStep(0);
+      resetForm();
+      setIsToastOpen(false);
+    }, 5000);
+  }
+
+  function finishSummaryBlockEdit(section: SummarySectionKey) {
+    const blockMissing =
+      section === "route"
+        ? getRouteMissingItems()
+        : section === "details"
+        ? getDetailsMissingItems()
+        : getContactMissingItems(personalInformation, isEn);
+    if (blockMissing.length > 0) {
+      setAttemptedSteps((prev) => ({ ...prev, 3: true }));
+      scrollToMissingField(blockMissing[0].elementId);
+      return;
+    }
+    setOpenSummaryEditors((prev) => ({ ...prev, [section]: false }));
+  }
+
+  function renderRouteAndTimingFields() {
+    const abholErr = getVisibleError("abholort") ?? getVisibleError("abholortAdresse");
+    const zielErr = getVisibleError("zielort") ?? getVisibleError("zielortAdresse");
+    const abholRueckErr =
+      getVisibleError("abholortRueckreise") ??
+      getVisibleError("abholortRueckreiseAdresse");
+    const zielRueckErr =
+      getVisibleError("zielortRueckreise") ??
+      getVisibleError("zielortRueckreiseAdresse");
+    const dtHinErr = getVisibleError("hinreiseDatum");
+    const dtRueckErr = getVisibleError("rueckreiseDatum");
+
+    return (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <ReturnTripToggle
+          checked={transportInformation.rueckReise}
+          onChange={toggleRueckReise}
+          variant="train"
+        />
+
+        {/* Abholort * */}
+        <div id="wiz-field-abholort" className="relative w-full scroll-mt-28">
+          <Listbox
+            value={transportInformation.abholort}
+            onChange={(e) => {
+              markTouched("abholort");
+              openAddressModal(e, false, false);
+            }}
+          >
+            <Listbox.Button className="w-full">
+              <div
+                className={`relative flex min-h-[4rem] flex-1 flex-row items-center gap-4 rounded-lg border-[1px] bg-[#111111] py-2.5 px-4 transition-colors ${
+                  abholErr
+                    ? "border-red-500"
+                    : !transportInformation.abholort
                     ? "border-yellow-500"
-                    : ""
-                    }`}>
-                  <div className="p-2 text-xl">
-                    <IoLocationOutline />
-                  </div>
-                  <div className="group flex flex-1 flex-col">
-                    <motion.span
-                      layout="position"
-                      className={
-                        "text-left " +
-                        (transportInformation.abholort ? "text-sm" : "text-md")
-                      }>
-                      {t("index.wizard-abholort")}
-                    </motion.span>
-                    <span className="text-left">
-                      {transportInformation.abholort}
-                    </span>
-                  </div>
-                  <BsChevronDown />
+                    : "border-[#257BCC]"
+                }`}
+              >
+                <div className="p-2 text-xl">
+                  <IoLocationOutline />
                 </div>
-              </Listbox.Button>
-              <Listbox.Options
-                className={
-                  "absolute top-16 z-10 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg bg-neutral-900"
-                }>
-                <motion.div
-                  initial={{ y: -50 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -50 }}>
-                  {getAbholorte(false).map((abholort) => (
-                    <Listbox.Option
-                      className={
-                        "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                      }
-                      key={abholort}
-                      value={abholort}>
-                      {abholort}
-                    </Listbox.Option>
-                  ))}
-                </motion.div>
-              </Listbox.Options>
-            </Listbox>
-            <AddressModal
-              isOpen={isAbholortModalOpen}
-              onClose={() => handleAddressModalClose(false, false)}
-              onSave={() => closeAddressModal(false, false)}
-              city={transportInformation.abholort ?? ""}
+                <div className="group flex flex-1 flex-col">
+                  <motion.span
+                    layout="position"
+                    className={
+                      "text-left leading-snug " +
+                      (transportInformation.abholort ? "text-sm" : "text-md")
+                    }
+                  >
+                    {t("index.wizard-abholort")}
+                    <RequiredStar />
+                  </motion.span>
+                  <span className="text-left leading-snug">
+                    {transportInformation.abholort}
+                  </span>
+                </div>
+                <BsChevronDown />
+              </div>
+            </Listbox.Button>
+            <Listbox.Options className="absolute top-16 z-20 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+              {getAbholorte(false).map((abholort) => (
+                <Listbox.Option
+                  className="flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
+                  key={abholort}
+                  value={abholort}
+                >
+                  {abholort}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Listbox>
+
+          <AddressModal
+            isOpen={isAbholortModalOpen}
+            onClose={() => closeAddressModal(false, false)}
+            onSave={() => closeAddressModal(false, false)}
+            city={transportInformation.abholort ?? ""}
+            strasse={transportInformation.abholortAdresse.strasse}
+            hausnummer={transportInformation.abholortAdresse.hausnummer}
+            onStrasseChange={(val) =>
+              setTransportInformation((prev) => ({
+                ...prev,
+                abholortAdresse: { ...prev.abholortAdresse, strasse: val },
+              }))
+            }
+            onHausnummerChange={(val) =>
+              setTransportInformation((prev) => ({
+                ...prev,
+                abholortAdresse: { ...prev.abholortAdresse, hausnummer: val },
+              }))
+            }
+            isValid={isModalDataValid(false, false)}
+          />
+
+          {transportInformation.abholort &&
+          !isTrainStation(transportInformation.abholort) ? (
+            <AddressPromptButton
+              required
               strasse={transportInformation.abholortAdresse.strasse}
               hausnummer={transportInformation.abholortAdresse.hausnummer}
-              onStrasseChange={(val) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  abholortAdresse: {
-                    ...transportInformation.abholortAdresse,
-                    strasse: val,
-                  },
-                })
-              }
-              onHausnummerChange={(val) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  abholortAdresse: {
-                    ...transportInformation.abholortAdresse,
-                    hausnummer: val,
-                  },
-                })
-              }
-              isValid={isModalDataValid(false, false)}
+              onClick={() => setIsAbholortModalOpen(true)}
             />
-            {transportInformation.abholort &&
-              !TRAIN_STATIONS.includes(transportInformation.abholort) ? (
-              <AddressPromptButton
-                strasse={transportInformation.abholortAdresse.strasse}
-                hausnummer={transportInformation.abholortAdresse.hausnummer}
-                onClick={() => setIsAbholortModalOpen(true)}
-              />
-            ) : null}
-          </div>
-          <div className="relative w-full">
-            <Listbox
-              value={transportInformation.zielort}
-              onChange={(e) => {
-                openAddressModal(e, true, false);
-              }}>
-              <Listbox.Button className={"w-full"}>
-                <div
-                  className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.zielort === null
+          ) : null}
+          <FieldErrorText message={abholErr} />
+        </div>
+
+        {/* Zielort * */}
+        <div id="wiz-field-zielort" className="relative w-full scroll-mt-28">
+          <Listbox
+            value={transportInformation.zielort}
+            onChange={(e) => {
+              markTouched("zielort");
+              openAddressModal(e, true, false);
+            }}
+          >
+            <Listbox.Button className="w-full">
+              <div
+                className={`relative flex min-h-[4rem] flex-1 flex-row items-center gap-4 rounded-lg border-[1px] bg-[#111111] py-2.5 px-4 transition-colors ${
+                  zielErr
+                    ? "border-red-500"
+                    : !transportInformation.zielort
                     ? "border-yellow-500"
-                    : ""
-                    }`}>
-                  <div className="p-2 text-xl">
-                    <BiMapPin />
-                  </div>
-                  <div className="group flex flex-1 flex-col">
-                    <motion.span
-                      layout="position"
-                      className={
-                        "text-left " +
-                        (transportInformation.zielort ? "text-sm" : "text-md")
-                      }>
-                      {t("index.wizard-zielort")}
-                    </motion.span>
-                    <span className="text-left">
-                      {transportInformation.zielort}
-                    </span>
-                  </div>
-                  <BsChevronDown />
+                    : "border-[#257BCC]"
+                }`}
+              >
+                <div className="p-2 text-xl">
+                  <BiMapPin />
                 </div>
-              </Listbox.Button>
-              <Listbox.Options
-                className={
-                  "absolute top-16 z-10 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg bg-neutral-900"
-                }>
-                <motion.div
-                  initial={{ y: -50 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -50 }}>
-                  {getZielorte(false).map((abholort) => (
+                <div className="group flex flex-1 flex-col">
+                  <motion.span
+                    layout="position"
+                    className={
+                      "text-left leading-snug " +
+                      (transportInformation.zielort ? "text-sm" : "text-md")
+                    }
+                  >
+                    {t("index.wizard-zielort")}
+                    <RequiredStar />
+                  </motion.span>
+                  <span className="text-left leading-snug">
+                    {transportInformation.zielort}
+                  </span>
+                </div>
+                <BsChevronDown />
+              </div>
+            </Listbox.Button>
+            <Listbox.Options className="absolute top-16 z-20 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+              {getZielorte(false).map((zielort) => (
+                <Listbox.Option
+                  className="flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
+                  key={zielort}
+                  value={zielort}
+                >
+                  {zielort}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Listbox>
+
+          <AddressModal
+            isOpen={isZielortModalOpen}
+            onClose={() => closeAddressModal(true, false)}
+            onSave={() => closeAddressModal(true, false)}
+            city={transportInformation.zielort ?? ""}
+            strasse={transportInformation.zielortAdresse.strasse}
+            hausnummer={transportInformation.zielortAdresse.hausnummer}
+            onStrasseChange={(val) =>
+              setTransportInformation((prev) => ({
+                ...prev,
+                zielortAdresse: { ...prev.zielortAdresse, strasse: val },
+              }))
+            }
+            onHausnummerChange={(val) =>
+              setTransportInformation((prev) => ({
+                ...prev,
+                zielortAdresse: { ...prev.zielortAdresse, hausnummer: val },
+              }))
+            }
+            isValid={isModalDataValid(true, false)}
+          />
+
+          {transportInformation.zielort &&
+          !isTrainStation(transportInformation.zielort) ? (
+            <AddressPromptButton
+              required
+              strasse={transportInformation.zielortAdresse.strasse}
+              hausnummer={transportInformation.zielortAdresse.hausnummer}
+              onClick={() => setIsZielortModalOpen(true)}
+            />
+          ) : null}
+          <FieldErrorText message={zielErr} />
+        </div>
+
+        {transportInformation.abholort && transportInformation.zielort ? (
+          <div className="col-span-1 flex justify-end md:col-span-2">
+            <button
+              type="button"
+              onClick={swapRoute}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-neutral-300 transition hover:border-[#257BCC] hover:bg-white/10 hover:text-white"
+            >
+              <MdSwapHoriz className="text-base text-[#5AC8FA]" />
+              <span>{t("wizard-extra.swap-route")}</span>
+            </button>
+          </div>
+        ) : null}
+
+        <MissingRouteCallout
+          variant="wizard-inline"
+          onRequestCustomRoute={onRequestCustomRoute}
+        />
+
+        {transportInformation.rueckReise ? (
+          <>
+            <div
+              id="wiz-field-abholort-rueck"
+              className="relative w-full scroll-mt-28"
+            >
+              <Listbox
+                value={transportInformation.abholortRueckreise}
+                onChange={(e) => {
+                  markTouched("abholortRueckreise");
+                  openAddressModal(e, false, true);
+                }}
+              >
+                <Listbox.Button className="w-full">
+                  <div
+                    className={`relative flex min-h-[4rem] flex-1 flex-row items-center gap-4 rounded-lg border-[1px] bg-[#111111] py-2.5 px-4 transition-colors ${
+                      abholRueckErr
+                        ? "border-red-500"
+                        : !transportInformation.abholortRueckreise
+                        ? "border-yellow-500"
+                        : "border-[#257BCC]"
+                    }`}
+                  >
+                    <div className="p-2 text-xl">
+                      <IoLocationOutline />
+                    </div>
+                    <div className="group flex flex-1 flex-col">
+                      <motion.span
+                        layout="position"
+                        className={
+                          "text-left leading-snug " +
+                          (transportInformation.abholortRueckreise
+                            ? "text-sm"
+                            : "text-md")
+                        }
+                      >
+                        {t("index.wizard-abholort")} ({t("index.wizard-ruckreise")}
+                        )
+                        <RequiredStar />
+                      </motion.span>
+                      <span className="text-left leading-snug">
+                        {transportInformation.abholortRueckreise}
+                      </span>
+                    </div>
+                    <BsChevronDown />
+                  </div>
+                </Listbox.Button>
+                <Listbox.Options className="absolute top-16 z-20 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+                  {getAbholorte(true).map((abholort) => (
                     <Listbox.Option
-                      className={
-                        "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                      }
+                      className="flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
                       key={abholort}
-                      value={abholort}>
+                      value={abholort}
+                    >
                       {abholort}
                     </Listbox.Option>
                   ))}
-                </motion.div>
-              </Listbox.Options>
-            </Listbox>
-            <AddressModal
-              isOpen={isZielortModalOpen}
-              onClose={() => handleAddressModalClose(true, false)}
-              onSave={() => closeAddressModal(true, false)}
-              city={transportInformation.zielort ?? ""}
-              strasse={transportInformation.zielortAdresse.strasse}
-              hausnummer={transportInformation.zielortAdresse.hausnummer}
-              onStrasseChange={(val) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  zielortAdresse: {
-                    ...transportInformation.zielortAdresse,
-                    strasse: val,
-                  },
-                })
-              }
-              onHausnummerChange={(val) =>
-                setTransportInformation({
-                  ...transportInformation,
-                  zielortAdresse: {
-                    ...transportInformation.zielortAdresse,
-                    hausnummer: val,
-                  },
-                })
-              }
-              isValid={isModalDataValid(true, false)}
-            />
-            {transportInformation.zielort &&
-              !TRAIN_STATIONS.includes(transportInformation.zielort) ? (
-              <AddressPromptButton
-                strasse={transportInformation.zielortAdresse.strasse}
-                hausnummer={transportInformation.zielortAdresse.hausnummer}
-                onClick={() => setIsZielortModalOpen(true)}
+                </Listbox.Options>
+              </Listbox>
+
+              <AddressModal
+                isOpen={isAbholortRueckreiseModalOpen}
+                onClose={() => closeAddressModal(false, true)}
+                onSave={() => closeAddressModal(false, true)}
+                city={transportInformation.abholortRueckreise ?? ""}
+                strasse={transportInformation.abholortRueckreiseAdresse.strasse}
+                hausnummer={
+                  transportInformation.abholortRueckreiseAdresse.hausnummer
+                }
+                onStrasseChange={(val) =>
+                  setTransportInformation((prev) => ({
+                    ...prev,
+                    abholortRueckreiseAdresse: {
+                      ...prev.abholortRueckreiseAdresse,
+                      strasse: val,
+                    },
+                  }))
+                }
+                onHausnummerChange={(val) =>
+                  setTransportInformation((prev) => ({
+                    ...prev,
+                    abholortRueckreiseAdresse: {
+                      ...prev.abholortRueckreiseAdresse,
+                      hausnummer: val,
+                    },
+                  }))
+                }
+                isValid={isModalDataValid(false, true)}
               />
-            ) : null}
-          </div>
-          {transportInformation.rueckReise ? (
-            <>
-              <div className="relative w-full">
-                <Listbox
-                  value={transportInformation.abholortRueckreise}
-                  onChange={(e) => {
-                    openAddressModal(e, false, true);
-                  }}>
-                  <Listbox.Button className={"w-full"}>
-                    <div
-                      className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.abholortRueckreise === null
-                        ? "border-yellow-500"
-                        : ""
-                        }`}>
-                      <div className="p-2 text-xl">
-                        <IoLocationOutline />
-                      </div>
-                      <div className="group flex flex-1 flex-col">
-                        <motion.span
-                          layout="position"
-                          className={
-                            "text-left " +
-                            (transportInformation.abholortRueckreise
-                              ? "text-sm"
-                              : "text-md")
-                          }>
-                          {t("index.wizard-ruckreise")}
-                          {" - "}
-                          {t("index.wizard-abholort")}
-                        </motion.span>
-                        <span className="text-left">
-                          {transportInformation.abholortRueckreise}
-                        </span>
-                      </div>
-                      <BsChevronDown />
-                    </div>
-                  </Listbox.Button>
-                  <Listbox.Options
-                    className={
-                      "absolute top-16 z-10 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg bg-neutral-900"
-                    }>
-                    <motion.div
-                      initial={{ y: -50 }}
-                      animate={{ y: 0 }}
-                      exit={{ y: -50 }}>
-                      {getAbholorte(true).map((abholort) => (
-                        <Listbox.Option
-                          className={
-                            "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                          }
-                          key={abholort}
-                          value={abholort}>
-                          {abholort}
-                        </Listbox.Option>
-                      ))}
-                    </motion.div>
-                  </Listbox.Options>
-                </Listbox>
-                <AddressModal
-                  isOpen={isAbholortRueckreiseModalOpen}
-                  onClose={() => handleAddressModalClose(false, true)}
-                  onSave={() => closeAddressModal(false, true)}
-                  city={transportInformation.abholortRueckreise ?? ""}
+
+              {transportInformation.abholortRueckreise &&
+              !isTrainStation(transportInformation.abholortRueckreise) ? (
+                <AddressPromptButton
+                  required
                   strasse={transportInformation.abholortRueckreiseAdresse.strasse}
                   hausnummer={
                     transportInformation.abholortRueckreiseAdresse.hausnummer
                   }
-                  onStrasseChange={(val) =>
-                    setTransportInformation({
-                      ...transportInformation,
-                      abholortRueckreiseAdresse: {
-                        ...transportInformation.abholortRueckreiseAdresse,
-                        strasse: val,
-                      },
-                    })
-                  }
-                  onHausnummerChange={(val) =>
-                    setTransportInformation({
-                      ...transportInformation,
-                      abholortRueckreiseAdresse: {
-                        ...transportInformation.abholortRueckreiseAdresse,
-                        hausnummer: val,
-                      },
-                    })
-                  }
-                  isValid={isModalDataValid(false, true)}
+                  onClick={() => setIsAbholortRueckreiseModalOpen(true)}
                 />
-                {transportInformation.abholortRueckreise &&
-                  !TRAIN_STATIONS.includes(
-                    transportInformation.abholortRueckreise
-                  ) ? (
-                  <AddressPromptButton
-                    strasse={
-                      transportInformation.abholortRueckreiseAdresse.strasse
-                    }
-                    hausnummer={
-                      transportInformation.abholortRueckreiseAdresse.hausnummer
-                    }
-                    onClick={() => setIsAbholortRueckreiseModalOpen(true)}
-                  />
-                ) : null}
-              </div>
-              <div className="relative w-full">
-                <Listbox
-                  value={transportInformation.zielortRueckreise}
-                  onChange={(e) => {
-                    openAddressModal(e, true, true);
-                  }}>
-                  <Listbox.Button className={"w-full"}>
-                    <div
-                      className={`relative flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 ${transportInformation.zielortRueckreise === null
+              ) : null}
+              <FieldErrorText message={abholRueckErr} />
+            </div>
+
+            <div
+              id="wiz-field-zielort-rueck"
+              className="relative w-full scroll-mt-28"
+            >
+              <Listbox
+                value={transportInformation.zielortRueckreise}
+                onChange={(e) => {
+                  markTouched("zielortRueckreise");
+                  openAddressModal(e, true, true);
+                }}
+              >
+                <Listbox.Button className="w-full">
+                  <div
+                    className={`relative flex min-h-[4rem] flex-1 flex-row items-center gap-4 rounded-lg border-[1px] bg-[#111111] py-2.5 px-4 transition-colors ${
+                      zielRueckErr
+                        ? "border-red-500"
+                        : !transportInformation.zielortRueckreise
                         ? "border-yellow-500"
-                        : ""
-                        }`}>
-                      <div className="p-2 text-xl">
-                        <BiMapPin />
-                      </div>
-                      <div className="group flex flex-1 flex-col">
-                        <motion.span
-                          layout="position"
-                          className={
-                            "text-left " +
-                            (transportInformation.zielortRueckreise
-                              ? "text-sm"
-                              : "text-md")
-                          }>
-                          {t("index.wizard-ruckreise")}
-                          {" - "}
-                          {t("index.wizard-zielort")}
-                        </motion.span>
-                        <span className="text-left">
-                          {transportInformation.zielortRueckreise}
-                        </span>
-                      </div>
-                      <BsChevronDown />
+                        : "border-[#257BCC]"
+                    }`}
+                  >
+                    <div className="p-2 text-xl">
+                      <BiMapPin />
                     </div>
-                  </Listbox.Button>
-                  <Listbox.Options
-                    className={
-                      "absolute top-16 z-10 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg bg-neutral-900"
-                    }>
-                    <motion.div
-                      initial={{ y: -50 }}
-                      animate={{ y: 0 }}
-                      exit={{ y: -50 }}>
-                      {getZielorte(true).map((abholort) => (
-                        <Listbox.Option
-                          className={
-                            "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                          }
-                          key={abholort}
-                          value={abholort}>
-                          {abholort}
-                        </Listbox.Option>
-                      ))}
-                    </motion.div>
-                  </Listbox.Options>
-                </Listbox>
-                <AddressModal
-                  isOpen={isZielortRueckreiseModalOpen}
-                  onClose={() => handleAddressModalClose(true, true)}
-                  onSave={() => closeAddressModal(true, true)}
-                  city={transportInformation.zielortRueckreise ?? ""}
+                    <div className="group flex flex-1 flex-col">
+                      <motion.span
+                        layout="position"
+                        className={
+                          "text-left leading-snug " +
+                          (transportInformation.zielortRueckreise
+                            ? "text-sm"
+                            : "text-md")
+                        }
+                      >
+                        {t("index.wizard-zielort")} ({t("index.wizard-ruckreise")})
+                        <RequiredStar />
+                      </motion.span>
+                      <span className="text-left leading-snug">
+                        {transportInformation.zielortRueckreise}
+                      </span>
+                    </div>
+                    <BsChevronDown />
+                  </div>
+                </Listbox.Button>
+                <Listbox.Options className="absolute top-16 z-20 max-h-48 w-full overflow-hidden overflow-y-scroll rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+                  {getZielorte(true).map((zielort) => (
+                    <Listbox.Option
+                      className="flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
+                      key={zielort}
+                      value={zielort}
+                    >
+                      {zielort}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Listbox>
+
+              <AddressModal
+                isOpen={isZielortRueckreiseModalOpen}
+                onClose={() => closeAddressModal(true, true)}
+                onSave={() => closeAddressModal(true, true)}
+                city={transportInformation.zielortRueckreise ?? ""}
+                strasse={transportInformation.zielortRueckreiseAdresse.strasse}
+                hausnummer={
+                  transportInformation.zielortRueckreiseAdresse.hausnummer
+                }
+                onStrasseChange={(val) =>
+                  setTransportInformation((prev) => ({
+                    ...prev,
+                    zielortRueckreiseAdresse: {
+                      ...prev.zielortRueckreiseAdresse,
+                      strasse: val,
+                    },
+                  }))
+                }
+                onHausnummerChange={(val) =>
+                  setTransportInformation((prev) => ({
+                    ...prev,
+                    zielortRueckreiseAdresse: {
+                      ...prev.zielortRueckreiseAdresse,
+                      hausnummer: val,
+                    },
+                  }))
+                }
+                isValid={isModalDataValid(true, true)}
+              />
+
+              {transportInformation.zielortRueckreise &&
+              !isTrainStation(transportInformation.zielortRueckreise) ? (
+                <AddressPromptButton
+                  required
                   strasse={transportInformation.zielortRueckreiseAdresse.strasse}
                   hausnummer={
                     transportInformation.zielortRueckreiseAdresse.hausnummer
                   }
-                  onStrasseChange={(val) =>
-                    setTransportInformation({
-                      ...transportInformation,
-                      zielortRueckreiseAdresse: {
-                        ...transportInformation.zielortRueckreiseAdresse,
-                        strasse: val,
-                      },
-                    })
-                  }
-                  onHausnummerChange={(val) =>
-                    setTransportInformation({
-                      ...transportInformation,
-                      zielortRueckreiseAdresse: {
-                        ...transportInformation.zielortRueckreiseAdresse,
-                        hausnummer: val,
-                      },
-                    })
-                  }
-                  isValid={isModalDataValid(true, true)}
+                  onClick={() => setIsZielortRueckreiseModalOpen(true)}
                 />
-                {transportInformation.zielortRueckreise &&
-                  !TRAIN_STATIONS.includes(
-                    transportInformation.zielortRueckreise
-                  ) ? (
-                  <AddressPromptButton
-                    strasse={
-                      transportInformation.zielortRueckreiseAdresse.strasse
-                    }
-                    hausnummer={
-                      transportInformation.zielortRueckreiseAdresse.hausnummer
-                    }
-                    onClick={() => setIsZielortRueckreiseModalOpen(true)}
-                  />
-                ) : null}
-              </div>
-            </>
-          ) : null}
-          <div
-            className={`grid w-full grid-cols-1 gap-4 ${transportInformation.rueckReise ? "md:grid-cols-2" : ""
-              }`}>
+              ) : null}
+              <FieldErrorText message={zielRueckErr} />
+            </div>
+          </>
+        ) : null}
+
+        {/* Date / Time Pickers */}
+        <div className="col-span-1 grid grid-cols-1 gap-4 md:col-span-2 md:grid-cols-2">
+          <div id="wiz-field-hinreise-datum" className="scroll-mt-28">
             <DateTimePicker
               dateTitle={t("index.toast-enter-date")}
               timeTitle={t("index.toast-enter-time")}
-              minDate={currentDate}
+              minDate={moment()}
               value={transportInformation.hinreiseDatum}
               onChange={(newValue) => {
-                setTransportInformation({
-                  ...transportInformation,
+                markTouched("hinreiseDatum");
+                setTransportInformation((prev) => ({
+                  ...prev,
                   hinreiseDatum: newValue,
-                });
+                }));
               }}
               renderTrigger={({ open }) => (
                 <button
                   type="button"
                   onClick={open}
-                  className={`flex h-16 w-full flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 text-left transition hover:bg-[#17181C] ${transportInformation.hinreiseDatum === null
-                    ? "border-yellow-500"
-                    : ""
-                    }`}>
+                  className={`flex min-h-[4rem] w-full flex-1 flex-row items-center gap-4 rounded-lg border-[1px] bg-[#111111] py-2.5 px-4 text-left transition hover:bg-[#17181C] ${
+                    dtHinErr
+                      ? "border-red-500"
+                      : !transportInformation.hinreiseDatum
+                      ? "border-yellow-500"
+                      : "border-[#257BCC]"
+                  }`}
+                >
                   <div className="group flex flex-1 flex-col">
-                    <motion.span layout="position" className="break-all text-sm">
-                      {t("index.wizard-hinreise")}
+                    <motion.span
+                      layout="position"
+                      className="text-sm leading-snug"
+                    >
+                      {transportInformation.rueckReise
+                        ? t("index.wizard-hinreise")
+                        : t("index.wizard-abholung")}
+                      <RequiredStar />
                     </motion.span>
                     <div className="flex flex-row items-center justify-between gap-2">
                       <span className="tabular-nums text-gray-200">
                         {transportInformation.hinreiseDatum
                           ? transportInformation.hinreiseDatum.format(
-                            "DD/MM/YYYY HH:mm"
-                          )
+                              "DD/MM/YYYY HH:mm"
+                            )
                           : t("index.toast-enter-date")}
                       </span>
                       <svg
@@ -1154,7 +1261,8 @@ const BahnhofTransfer = ({
                         viewBox="0 0 24 24"
                         strokeWidth={2}
                         stroke="currentColor"
-                        className="h-6 w-6 shrink-0 text-white">
+                        className="h-6 w-6 shrink-0 text-white"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -1166,43 +1274,55 @@ const BahnhofTransfer = ({
                 </button>
               )}
             />
-            {transportInformation.rueckReise ? (
+            <FieldErrorText message={dtHinErr} />
+          </div>
+
+          {transportInformation.rueckReise ? (
+            <div id="wiz-field-rueckreise-datum" className="scroll-mt-28">
               <DateTimePicker
                 disabled={transportInformation.hinreiseDatum === null}
                 dateTitle={t("index.toast-enter-date")}
                 timeTitle={t("index.toast-enter-time")}
-                value={transportInformation.rueckreiseDatum}
                 minDate={transportInformation.hinreiseDatum}
+                value={transportInformation.rueckreiseDatum}
                 onChange={(newValue) => {
-                  setTransportInformation({
-                    ...transportInformation,
+                  markTouched("rueckreiseDatum");
+                  setTransportInformation((prev) => ({
+                    ...prev,
                     rueckreiseDatum: newValue,
-                  });
+                  }));
                 }}
                 renderTrigger={({ open, disabled: isDisabled }) => (
                   <button
                     type="button"
                     disabled={isDisabled}
                     onClick={open}
-                    className={`flex h-16 w-full flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4 text-left transition ${isDisabled
-                      ? "cursor-not-allowed opacity-60"
-                      : "hover:bg-[#17181C]"
-                      } ${transportInformation.rueckreiseDatum === null
+                    className={`flex min-h-[4rem] w-full flex-1 flex-row items-center gap-4 rounded-lg border-[1px] bg-[#111111] py-2.5 px-4 text-left transition ${
+                      isDisabled
+                        ? "cursor-not-allowed opacity-60"
+                        : "hover:bg-[#17181C]"
+                    } ${
+                      dtRueckErr
+                        ? "border-red-500"
+                        : !transportInformation.rueckreiseDatum
                         ? "border-yellow-500"
-                        : ""
-                      }`}>
+                        : "border-[#257BCC]"
+                    }`}
+                  >
                     <div className="group flex flex-1 flex-col">
                       <motion.span
                         layout="position"
-                        className="break-all text-sm">
+                        className="text-sm leading-snug"
+                      >
                         {t("index.wizard-ruckreise")}
+                        <RequiredStar />
                       </motion.span>
                       <div className="flex flex-row items-center justify-between gap-2">
                         <span className="tabular-nums text-gray-200">
                           {transportInformation.rueckreiseDatum
                             ? transportInformation.rueckreiseDatum.format(
-                              "DD/MM/YYYY HH:mm"
-                            )
+                                "DD/MM/YYYY HH:mm"
+                              )
                             : t("index.toast-enter-date")}
                         </span>
                         <svg
@@ -1211,8 +1331,10 @@ const BahnhofTransfer = ({
                           viewBox="0 0 24 24"
                           strokeWidth={2}
                           stroke="currentColor"
-                          className={`h-6 w-6 shrink-0 ${isDisabled ? "text-white/20" : "text-white"
-                            }`}>
+                          className={`h-6 w-6 shrink-0 ${
+                            isDisabled ? "text-white/20" : "text-white"
+                          }`}
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -1224,137 +1346,287 @@ const BahnhofTransfer = ({
                   </button>
                 )}
               />
-            ) : null}
-          </div>
-          <LuggageSection
-            luggageMode={luggageMode}
-            onLuggageModeChange={handleLuggageModeChange}
-            koffer={transportInformation.koffer}
-            handgepaeck={transportInformation.handgepaeck}
-            personen={transportInformation.personen}
-            onKofferChange={(e) =>
-              setTransportInformation({
-                ...transportInformation,
-                koffer: e,
-              })
-            }
-            onHandgepaeckChange={(e) =>
-              setTransportInformation({
-                ...transportInformation,
-                handgepaeck: e,
-              })
-            }
-            onPersonenChange={(e) =>
-              setTransportInformation({
-                ...transportInformation,
-                personen: e,
-              })
-            }
-          />
-          <div className="grid w-full grid-cols-1 gap-4">
-            <div className="relative w-full">
-              <Listbox
-                value={transportInformation.fahrzeug}
-                onChange={(e) => {
-                  setTransportInformation({
-                    ...transportInformation,
-                    fahrzeug: e,
-                  });
-                }}>
-                <Listbox.Button className={"w-full"}>
-                  <div className="flex h-16 flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2 px-4">
-                    <div className="group flex flex-1 flex-col">
-                      <motion.span
-                        layout="position"
-                        className={
-                          "text-left " +
-                          (transportInformation.fahrzeug
-                            ? "text-sm"
-                            : "text-md")
-                        }>
-                        {t("index.wizard-fahrzeuge")}
-                      </motion.span>
-                      <div className="text-left">
-                        {transportInformation.fahrzeug}
-                      </div>
-                    </div>
-                    <BsChevronDown />
-                  </div>
-                </Listbox.Button>
-                <Listbox.Options
-                  className={
-                    "absolute top-16 z-10 max-h-48 w-full overflow-hidden rounded-lg bg-neutral-900"
-                  }>
-                  <motion.div
-                    initial={{ y: -50 }}
-                    animate={{ y: 0 }}
-                    exit={{ y: -50 }}>
-                    {Fahrzeuge.map((fahrzeug) => (
-                      <Listbox.Option
-                        className={
-                          "flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
-                        }
-                        key={fahrzeug}
-                        value={fahrzeug}>
-                        {fahrzeug}
-                      </Listbox.Option>
-                    ))}
-                  </motion.div>
-                </Listbox.Options>
-              </Listbox>
+              <FieldErrorText message={dtRueckErr} />
             </div>
-          </div>
+          ) : null}
         </div>
-        <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
-          <button
-            className="flex items-end rounded-lg bg-gray-600 py-2 px-4 transition-all hover:bg-gray-500"
-            onClick={(e) => {
-              setActiveStep(activeStep - 1);
-            }}>
-            <div className="flex flex-row items-center gap-4">
+      </div>
+    );
+  }
+
+  function renderBookingDetailsFields() {
+    return (
+      <div className="space-y-4">
+        <div id="wiz-field-art" className="scroll-mt-28">
+          <BookingTypeSelector
+            value={transportInformation.art}
+            onChange={(val) => {
+              markTouched("art");
+              setTransportInformation((prev) => ({ ...prev, art: val }));
+            }}
+            hasError={Boolean(getVisibleError("art"))}
+            isMissingHighlight={!transportInformation.art}
+            errorMessage={getVisibleError("art")}
+          />
+        </div>
+
+        <LuggageSection
+          showHelpInfo
+          luggageMode={luggageMode}
+          onLuggageModeChange={handleLuggageModeChange}
+          koffer={transportInformation.koffer}
+          handgepaeck={transportInformation.handgepaeck}
+          personen={transportInformation.personen}
+          onKofferChange={(val) =>
+            setTransportInformation((prev) => ({ ...prev, koffer: val }))
+          }
+          onHandgepaeckChange={(val) =>
+            setTransportInformation((prev) => ({ ...prev, handgepaeck: val }))
+          }
+          onPersonenChange={(val) =>
+            setTransportInformation((prev) => ({ ...prev, personen: val }))
+          }
+        />
+
+        <div className="relative w-full">
+          <Listbox
+            value={transportInformation.fahrzeug}
+            onChange={(e) => {
+              minVehicleTierRef.current = getVehicleTier(e);
+              setTransportInformation((prev) => ({ ...prev, fahrzeug: e }));
+            }}
+          >
+            <Listbox.Button className="w-full">
+              <div className="flex min-h-[4rem] flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2.5 px-4">
+                <div className="group flex flex-1 flex-col">
+                  <motion.span
+                    layout="position"
+                    className={
+                      "text-left leading-snug " +
+                      (transportInformation.fahrzeug ? "text-sm" : "text-md")
+                    }
+                  >
+                    {t("index.wizard-fahrzeuge")}
+                  </motion.span>
+                  <div className="text-left leading-snug">
+                    {transportInformation.fahrzeug}
+                  </div>
+                </div>
+                <BsChevronDown />
+              </div>
+            </Listbox.Button>
+            <Listbox.Options className="absolute top-16 z-20 max-h-48 w-full overflow-hidden rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+              {Fahrzeuge.map((fahrzeug) => (
+                <Listbox.Option
+                  className="flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
+                  key={fahrzeug}
+                  value={fahrzeug}
+                >
+                  {fahrzeug}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Listbox>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================================
+  // STEP 1: Transportinformationen
+  // ==========================================================
+  if (activeStep === 1) {
+    const artErr = getVisibleError("art");
+    return (
+      <div className="flex flex-col gap-6">
+        <RequiredLegend isEn={isEn} />
+
+        <div id="wiz-field-art" className="scroll-mt-28">
+          <BookingTypeSelector
+            value={transportInformation.art}
+            onChange={(val) => {
+              markTouched("art");
+              setTransportInformation((prev) => ({ ...prev, art: val }));
+            }}
+            hasError={Boolean(artErr)}
+            isMissingHighlight={!transportInformation.art}
+            errorMessage={artErr}
+          />
+        </div>
+
+        {renderRouteAndTimingFields()}
+
+        <LuggageSection
+          showHelpInfo
+          luggageMode={luggageMode}
+          onLuggageModeChange={handleLuggageModeChange}
+          koffer={transportInformation.koffer}
+          handgepaeck={transportInformation.handgepaeck}
+          personen={transportInformation.personen}
+          onKofferChange={(val) =>
+            setTransportInformation((prev) => ({ ...prev, koffer: val }))
+          }
+          onHandgepaeckChange={(val) =>
+            setTransportInformation((prev) => ({ ...prev, handgepaeck: val }))
+          }
+          onPersonenChange={(val) =>
+            setTransportInformation((prev) => ({ ...prev, personen: val }))
+          }
+        />
+
+        <div className="relative w-full">
+          <Listbox
+            value={transportInformation.fahrzeug}
+            onChange={(e) => {
+              minVehicleTierRef.current = getVehicleTier(e);
+              setTransportInformation((prev) => ({ ...prev, fahrzeug: e }));
+            }}
+          >
+            <Listbox.Button className="w-full">
+              <div className="flex min-h-[4rem] flex-1 flex-row items-center gap-4 rounded-lg border-[1px] border-[#257BCC] bg-[#111111] py-2.5 px-4">
+                <div className="group flex flex-1 flex-col">
+                  <motion.span
+                    layout="position"
+                    className={
+                      "text-left leading-snug " +
+                      (transportInformation.fahrzeug ? "text-sm" : "text-md")
+                    }
+                  >
+                    {t("index.wizard-fahrzeuge")}
+                  </motion.span>
+                  <div className="text-left leading-snug">
+                    {transportInformation.fahrzeug}
+                  </div>
+                </div>
+                <BsChevronDown />
+              </div>
+            </Listbox.Button>
+            <Listbox.Options className="absolute top-16 z-20 max-h-48 w-full overflow-hidden rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+              {Fahrzeuge.map((fahrzeug) => (
+                <Listbox.Option
+                  className="flex select-none items-center px-4 py-2 hover:cursor-pointer hover:bg-neutral-800"
+                  key={fahrzeug}
+                  value={fahrzeug}
+                >
+                  {fahrzeug}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Listbox>
+        </div>
+
+        <div className="space-y-4 pt-2">
+          <MissingChecklistBanner
+            missing={currentMissing}
+            attempted={isStepAttempted}
+            isEn={isEn}
+          />
+
+          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+            <button
+              type="button"
+              className="flex items-center gap-3 rounded-lg bg-gray-600 py-2.5 px-4 transition-all hover:bg-gray-500"
+              onClick={() =>
+                changeStepAndScrollTop(Math.max(0, activeStep - 1))
+              }
+            >
               <BsChevronLeft />
               <span className="text-sm font-medium">
                 {t("index.wizard-zuruck").toUpperCase()}
               </span>
-            </div>
-          </button>
-          <div className="flex flex-col">
-            <span className="text-center text-2xl">
-              {t("index.wizard-price")}: {getPrice()} €
-            </span>
-            <span className="text-center text-sm">
-              {t("index.wizard-mwst")}
-            </span>
-          </div>
-          <div className="flex flex-row gap-4">
-            <button
-              className="flex flex-row items-center gap-4 rounded-lg bg-white/10 py-2 px-2 transition-all hover:bg-white/20"
-              onClick={resetForm}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-4 w-4">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                />
-              </svg>
             </button>
+
+            <div className="flex flex-col">
+              <span className="text-center text-2xl">
+                {t("index.wizard-price")}: {getPrice()} €
+              </span>
+              <span className="text-center text-sm text-neutral-300">
+                {t("index.wizard-mwst")}
+              </span>
+            </div>
+
+            <div className="flex flex-row items-center gap-4">
+              <button
+                type="button"
+                aria-label={isEn ? "Reset form" : "Formular zurücksetzen"}
+                className="flex flex-row items-center rounded-lg bg-white/10 p-2.5 transition-all hover:bg-white/20"
+                onClick={resetForm}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                  />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNextClick}
+                className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] active:scale-[0.98]"
+              >
+                <div className="flex flex-row items-center gap-3">
+                  <span>{t("index.wizard-weiter")}</span>
+                  <BsChevronRight />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================================
+  // STEP 2: Persönliche Daten
+  // ==========================================================
+  if (activeStep === 2) {
+    return (
+      <div className="flex flex-col gap-6">
+        <RequiredLegend isEn={isEn} />
+
+        <PersonalDataFields
+          personalInformation={personalInformation}
+          setPersonalInformation={setPersonalInformation}
+          markTouched={markTouched}
+          getFieldBorderClass={getFieldBorderClass}
+          getVisibleError={getVisibleError}
+        />
+
+        <div className="space-y-4 pt-2">
+          <MissingChecklistBanner
+            missing={currentMissing}
+            attempted={isStepAttempted}
+            isEn={isEn}
+          />
+
+          <div className="flex flex-row justify-between gap-6">
             <button
-              disabled={!getStageIsValid()}
-              className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
-              onClick={(e) => {
-                trackWizardStep("bahnhof", activeStep + 1);
-                setActiveStep(activeStep + 1);
-              }}>
+              type="button"
+              className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
+              onClick={() => changeStepAndScrollTop(activeStep - 1)}
+            >
               <div className="flex flex-row items-center gap-3">
-                <span>
-                  {t("index.wizard-weiter")}
-                </span>
+                <BsChevronLeft />
+                <span>{t("index.wizard-zuruck")}</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleNextClick}
+              className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] active:scale-[0.98]"
+            >
+              <div className="flex flex-row items-center gap-3">
+                <span>{t("index.wizard-weiter")}</span>
                 <BsChevronRight />
               </div>
             </button>
@@ -1362,365 +1634,350 @@ const BahnhofTransfer = ({
         </div>
       </div>
     );
-  else if (activeStep === 2)
-    return (
-      <div className="flex flex-col gap-8">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8 lg:gap-32">
-          <div className="flex flex-col gap-4">
-            <span className="text-xl">
-              {t("index.wizard-personal-data").toUpperCase()}
-            </span>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="name">Name</label>
-              <input
-                value={personalInformation.name}
-                onChange={(e) => {
-                  setPersonalInformation({
-                    ...personalInformation,
-                    name: e.target.value,
-                  });
-                }}
-                type="text"
-                id="name"
-                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${personalInformation.name === "" ? "ring-yellow-500" : ""
-                  }`}
-              />
+  }
+
+  // ==========================================================
+  // STEP 3: Best-Practice 2-Spalten Summary + Direktes Bearbeiten
+  // ==========================================================
+  const routeMissing = getRouteMissingItems();
+  const detailsMissing = getDetailsMissingItems();
+  const contactMissing = getContactMissingItems(personalInformation, isEn);
+  const breakdown = getPriceBreakdown();
+  const routeEstimate = getRouteEstimate(
+    transportInformation.abholort,
+    transportInformation.zielort,
+    isEn
+  );
+  const selectedVehicleKey: FahrzeugType =
+    transportInformation.fahrzeug ?? "Business Limousine";
+
+  return (
+    <>
+      {!abgeschickt ? (
+        <div className="flex flex-col gap-6">
+          <div className="border-b border-white/10 pb-4">
+            <h3 className="text-xl font-bold text-white sm:text-2xl">
+              {isEn
+                ? "Review & Confirm Your Booking"
+                : "Ihre Buchung im Überblick"}
+            </h3>
+            <p className="mt-1 text-xs text-neutral-400 sm:text-sm">
+              {isEn
+                ? "Check your trip and contact details below. You can edit any section directly without going back."
+                : "Prüfen Sie Ihre Angaben vor dem Absenden – jeden Bereich können Sie hier direkt über „Ändern“ anpassen."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+            <div className="space-y-4 lg:col-span-7 xl:col-span-8">
+              <SummaryBlockCard
+                title={isEn ? "Route & Pick-up Time" : "Fahrtstrecke & Abholzeit"}
+                badgeText={
+                  routeEstimate
+                    ? isEn
+                      ? `~${routeEstimate.distanceKm} km · ${routeEstimate.driveTimeLabel}`
+                      : `ca. ${routeEstimate.distanceKm} km · ${routeEstimate.driveTimeLabel}`
+                    : null
+                }
+                openCount={routeMissing.length}
+                hasError={routeMissing.length > 0 && isStepAttempted}
+                isEditing={openSummaryEditors.route}
+                onToggleEdit={() =>
+                  openSummaryEditors.route
+                    ? finishSummaryBlockEdit("route")
+                    : setOpenSummaryEditors((prev) => ({
+                        ...prev,
+                        route: true,
+                      }))
+                }
+                isEn={isEn}
+              >
+                {openSummaryEditors.route ? (
+                  renderRouteAndTimingFields()
+                ) : (
+                  <dl className="divide-y divide-white/5 text-sm">
+                    <div className="flex flex-col justify-between gap-1 py-2.5 sm:flex-row sm:gap-4">
+                      <dt className="text-neutral-400">
+                        {t("index.wizard-abholort")}
+                        {transportInformation.rueckReise
+                          ? ` (${t("index.wizard-hinreise")})`
+                          : ""}
+                      </dt>
+                      <dd className="font-medium text-white sm:text-right">
+                        {formatLocationWithStreet(
+                          transportInformation.abholort,
+                          transportInformation.abholortAdresse
+                        )}
+                      </dd>
+                    </div>
+                    <div className="flex flex-col justify-between gap-1 py-2.5 sm:flex-row sm:gap-4">
+                      <dt className="text-neutral-400">
+                        {t("index.wizard-zielort")}
+                        {transportInformation.rueckReise
+                          ? ` (${t("index.wizard-hinreise")})`
+                          : ""}
+                      </dt>
+                      <dd className="font-medium text-white sm:text-right">
+                        {formatLocationWithStreet(
+                          transportInformation.zielort,
+                          transportInformation.zielortAdresse
+                        )}
+                      </dd>
+                    </div>
+                    <div className="flex flex-col justify-between gap-1 py-2.5 sm:flex-row sm:gap-4">
+                      <dt className="text-neutral-400">
+                        {t("index.wizard-abholung")}
+                        {transportInformation.rueckReise
+                          ? ` (${t("index.wizard-hinreise")})`
+                          : ""}
+                      </dt>
+                      <dd className="font-medium tabular-nums text-white sm:text-right">
+                        {formatDate(transportInformation.hinreiseDatum)}
+                      </dd>
+                    </div>
+
+                    {transportInformation.rueckReise ? (
+                      <>
+                        <div className="flex flex-col justify-between gap-1 py-2.5 sm:flex-row sm:gap-4">
+                          <dt className="text-neutral-400">
+                            {t("index.wizard-ruckreise")}
+                          </dt>
+                          <dd className="font-medium text-white sm:text-right">
+                            {formatLocationWithStreet(
+                              transportInformation.abholortRueckreise,
+                              transportInformation.abholortRueckreiseAdresse
+                            )}{" "}
+                            →{" "}
+                            {formatLocationWithStreet(
+                              transportInformation.zielortRueckreise,
+                              transportInformation.zielortRueckreiseAdresse
+                            )}
+                          </dd>
+                        </div>
+                        <div className="flex flex-col justify-between gap-1 py-2.5 sm:flex-row sm:gap-4">
+                          <dt className="text-neutral-400">
+                            {t("index.wizard-abholung")} (
+                            {t("index.wizard-ruckreise")})
+                          </dt>
+                          <dd className="font-medium tabular-nums text-white sm:text-right">
+                            {formatDate(transportInformation.rueckreiseDatum)}
+                          </dd>
+                        </div>
+                      </>
+                    ) : null}
+                  </dl>
+                )}
+              </SummaryBlockCard>
+
+              <SummaryBlockCard
+                title={
+                  isEn
+                    ? "Booking Type, Vehicle & Luggage"
+                    : "Buchungsart, Fahrzeug & Gepäck"
+                }
+                openCount={detailsMissing.length}
+                hasError={detailsMissing.length > 0 && isStepAttempted}
+                isEditing={openSummaryEditors.details}
+                onToggleEdit={() =>
+                  openSummaryEditors.details
+                    ? finishSummaryBlockEdit("details")
+                    : setOpenSummaryEditors((prev) => ({
+                        ...prev,
+                        details: true,
+                      }))
+                }
+                isEn={isEn}
+              >
+                {openSummaryEditors.details ? (
+                  renderBookingDetailsFields()
+                ) : (
+                  <SummaryVehicleDisplay
+                    vehicleKey={selectedVehicleKey}
+                    bookingType={transportInformation.art}
+                    personen={transportInformation.personen}
+                    koffer={transportInformation.koffer}
+                    handgepaeck={transportInformation.handgepaeck}
+                    isEn={isEn}
+                  />
+                )}
+              </SummaryBlockCard>
+
+              <SummaryBlockCard
+                title={
+                  isEn
+                    ? "Personal Details & Notes"
+                    : "Persönliche Daten & Hinweise"
+                }
+                openCount={contactMissing.length}
+                hasError={contactMissing.length > 0 && isStepAttempted}
+                isEditing={openSummaryEditors.contact}
+                onToggleEdit={() =>
+                  openSummaryEditors.contact
+                    ? finishSummaryBlockEdit("contact")
+                    : setOpenSummaryEditors((prev) => ({
+                        ...prev,
+                        contact: true,
+                      }))
+                }
+                isEn={isEn}
+              >
+                {openSummaryEditors.contact ? (
+                  <PersonalDataFields
+                    personalInformation={personalInformation}
+                    setPersonalInformation={setPersonalInformation}
+                    markTouched={markTouched}
+                    getFieldBorderClass={getFieldBorderClass}
+                    getVisibleError={getVisibleError}
+                  />
+                ) : (
+                  <SummaryPersonalDetails
+                    personalInformation={personalInformation}
+                  />
+                )}
+              </SummaryBlockCard>
+
+              <div>
+                <button
+                  type="button"
+                  className="inline-flex min-h-[42px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
+                  onClick={() => changeStepAndScrollTop(activeStep - 1)}
+                >
+                  <div className="flex flex-row items-center gap-2.5">
+                    <BsChevronLeft />
+                    <span>{t("index.wizard-zuruck")}</span>
+                  </div>
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="firma">* {t("index.wizard-firma")}</label>
-              <input
-                value={personalInformation.firma}
-                onChange={(e) => {
-                  setPersonalInformation({
-                    ...personalInformation,
-                    firma: e.target.value,
-                  });
-                }}
-                type="text"
-                id="firma"
-                className="rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="tel">{t("index.wizard-telefonnummer")}</label>
-              <input
-                value={personalInformation.telefon}
-                onChange={(e) => {
-                  setPersonalInformation({
-                    ...personalInformation,
-                    telefon: e.target.value,
-                  });
-                }}
-                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${personalInformation.telefon === "" ? "ring-yellow-500" : ""
-                  }`}
-                type="tel"
-                id="tel"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="email">E-Mail</label>
-              <input
-                value={personalInformation.email}
-                onChange={(e) => {
-                  setPersonalInformation({
-                    ...personalInformation,
-                    email: e.target.value,
-                  });
-                }}
-                className={`rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2 ${personalInformation.email === "" ? "ring-yellow-500" : ""
-                  }`}
-                type="text"
-                id="email"
-              />
-            </div>
-          </div>
-          <div className="flex h-full flex-col gap-4">
-            <span className="text-xl">
-              {t("index.wizard-zusatzinformationen").toUpperCase()}
-            </span>
-
-            <div className="flex h-full flex-col gap-2">
-              <label htmlFor="nachricht">* {t("index.wizard-nachricht")}</label>
-              <textarea
-                placeholder={t("index.wizard-placeholder").toString()}
-                value={personalInformation.nachricht}
-                onChange={(e) => {
-                  setPersonalInformation({
-                    ...personalInformation,
-                    nachricht: e.target.value,
-                  });
-                }}
-                className="flex h-full flex-1 flex-col gap-4 rounded-lg bg-[#111111] py-2 px-4 ring-1 ring-[#257BCC] transition-all focus:ring-2"
-                id="nachricht"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-row justify-between gap-8">
-          <button
-            className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
-            onClick={(e) => {
-              setActiveStep(activeStep - 1);
-            }}>
-            <div className="flex flex-row items-center gap-3">
-              <BsChevronLeft />
-              <span>
-                {t("index.wizard-zuruck")}
-              </span>
-            </div>
-          </button>
-          <button
-            disabled={!getStageIsValid()}
-            className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
-            onClick={(e) => {
-              trackWizardStep("bahnhof", activeStep + 1);
-              setActiveStep(activeStep + 1);
-            }}>
-            <div className="flex flex-row items-center gap-3">
-              <span>
-                {t("index.wizard-weiter")}
-              </span>
-              <BsChevronRight />
-            </div>
-          </button>
-        </div>
-      </div>
-    );
-  else if (activeStep === 3)
-    return (
-      <>
-        {!abgeschickt ? (
-          <div className="flex flex-col gap-8">
-            <span className="text-xl font-bold">
-              {t("index.wizard-zusammenfassung")}
-            </span>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-8 lg:gap-32">
-              <div className="flex flex-col gap-4">
-                <span className="font-bold">
-                  {t("index.wizard-personal-data")}
-                </span>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">Name</span>
-                  <span className="text-sm">{personalInformation.name}</span>
-                </div>
-                {personalInformation.firma ? (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-bold">
-                      {t("index.wizard-firma")}
-                    </span>
-                    <span className="text-sm">{personalInformation.firma}</span>
-                  </div>
-                ) : null}
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-abholort-ziel")}
-                  </span>
-                  <span className="text-sm">
-                    {transportInformation.abholort} {t("index.wizard-nach")}{" "}
-                    {transportInformation.zielort}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-abholung")} - {t("index.wizard-hinreise")}
-                  </span>
-                  <span className="text-sm">
-                    {formatDate(transportInformation.hinreiseDatum)}{" "}
-                  </span>
-                </div>
-                {transportInformation.rueckReise ? (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-bold">
-                      {t("index.wizard-ruckreise")} -{" "}
-                      {t("index.wizard-abholort-ziel")}
-                    </span>
-                    <span className="text-sm">
-                      {transportInformation.abholortRueckreise} nach{" "}
-                      {transportInformation.zielortRueckreise}
-                    </span>
-                  </div>
-                ) : null}
-                {transportInformation.rueckReise ? (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-bold">
-                      {t("index.wizard-abholung")} -{" "}
-                      {t("index.wizard-ruckreise")}
-                    </span>
-                    <span className="text-sm">
-                      {formatDate(transportInformation.rueckreiseDatum)}{" "}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex flex-col gap-4">
-                <span className="font-bold">{t("index.wizard-element-2")}</span>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-type")}
-                  </span>
-                  <span className="text-sm">{transportInformation.art}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-fahrzeuge")}
-                  </span>
-                  <span className="text-sm">
-                    {transportInformation.fahrzeug}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-koffer")}
-                  </span>
-                  <span className="text-sm">{transportInformation.koffer}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-handgepaeck")}
-                  </span>
-                  <span className="text-sm">
-                    {transportInformation.handgepaeck}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-personen")}
-                  </span>
-                  <span className="text-sm">
-                    {transportInformation.personen}
-                  </span>
-                </div>
-              </div>
-              <div className="relative flex flex-col gap-4">
-                <span className="font-bold">{t("index.wizard-contact")}</span>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">
-                    {t("index.wizard-telefonnummer")}
-                  </span>
-                  <span className="text-sm">{personalInformation.telefon}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold">E-Mail</span>
-                  <span className="text-sm">{personalInformation.email}</span>
-                </div>
-                {personalInformation.nachricht ? (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-bold">
-                      {t("index.wizard-nachricht")}
-                    </span>
-                    <span className="break-all text-sm">
-                      {personalInformation.nachricht}
-                    </span>
-                  </div>
-                ) : null}
-                <div className="absolute bottom-0 left-0 right-0 hidden lg:block">
-                  <div className="flex flex-col">
-                    <span className="text-center text-2xl">
-                      {t("index.wizard-price")}: {getPrice()} €
-                    </span>
-                    <span className="text-center text-sm">
-                      {t("index.wizard-mwst")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Switch
-              checked={datenErklaerung}
-              onChange={(e) => {
-                setDatenErklaerung(e);
-              }}
-              className={`flex w-fit flex-row items-center gap-4 rounded-lg p-2 ring-yellow-500 ${datenErklaerung ? "ring-0" : "ring-2"
-                }`}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600">
-                {datenErklaerung ? <IoCheckmark className="text-xl" /> : null}
-              </div>
-              <div className="flex flex-1 flex-col text-start text-xs ">
-                <p>{t("index.wizard-accept-1")}</p>
-                <p>{t("index.wizard-accept-2")}</p>
-              </div>
-            </Switch>
-            <div className="flex flex-col lg:hidden">
-              <span className="text-center text-2xl">
-                {t("index.wizard-price")}: {getPrice()} €
-              </span>
-              <span className="text-center text-sm">
-                {t("index.wizard-mwst")}
-              </span>
-            </div>
-            <div className="flex flex-row justify-between">
-              <button
-                className="inline-flex min-h-[44px] items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-neutral-200 transition-all hover:bg-white/[0.12]"
-                onClick={(e) => {
-                  setActiveStep(activeStep - 1);
-                }}>
-                <div className="flex flex-row items-center gap-3">
-                  <BsChevronLeft />
-                  <span>
-                    {t("index.wizard-zuruck")}
-                  </span>
-                </div>
-              </button>
-              <button
-                disabled={!datenErklaerung}
-                className="inline-flex min-h-[44px] items-center rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0077ED] disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400"
-                onClick={() => {
-                  submitForm(
-                    "bahnhof",
-                    transportInformation,
-                    personalInformation,
-                    i18n.language
-                  );
-                  trackBookingSubmit({
-                    transferType: "bahnhof",
-                    bookingMode: transportInformation.art,
-                    pickup: transportInformation.abholort,
-                    dropoff: transportInformation.zielort,
-                    roundTrip: transportInformation.rueckReise,
-                    vehicle: transportInformation.fahrzeug,
-                    priceEur: parseFloat(getPrice()) || 0,
-                  });
-                  setIsToastOpen(true);
-                  setAbgeschickt(true);
-                  setTimeout(() => {
-                    setActiveStep(0);
-                    resetForm();
-                    setIsToastOpen(false);
-                  }, 5000);
-                }}>
+            <aside className="rounded-2xl border border-[#257BCC]/70 bg-[#13161F] p-5 shadow-xl lg:sticky lg:top-28 lg:col-span-5 xl:col-span-4">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#5AC8FA]">
+                <IoShieldCheckmarkOutline className="h-4 w-4" />
                 <span>
-                  {t("index.wizard-abschicken")}
+                  {isEn ? "Fare Summary" : "Preisübersicht & Abschluss"}
                 </span>
+              </div>
+
+              <SummaryAsideVehicleMini
+                vehicleKey={selectedVehicleKey}
+                isEn={isEn}
+              />
+
+              <div className="mt-4 space-y-2.5 border-b border-white/10 pb-4 text-sm">
+                <div className="flex items-center justify-between gap-2 text-neutral-300">
+                  <span>
+                    {transportInformation.rueckReise
+                      ? t("index.wizard-hinreise")
+                      : isEn
+                      ? "Transfer fare"
+                      : "Fahrtpreis"}
+                  </span>
+                  <span className="font-medium tabular-nums text-white">
+                    {breakdown.outbound.toFixed(2)} €
+                  </span>
+                </div>
+
+                {transportInformation.rueckReise ? (
+                  <div className="flex items-center justify-between gap-2 text-neutral-300">
+                    <span>{t("index.wizard-ruckreise")}</span>
+                    <span className="font-medium tabular-nums text-white">
+                      +{breakdown.returnTrip.toFixed(2)} €
+                    </span>
+                  </div>
+                ) : null}
+
+                {breakdown.surcharge > 0 ? (
+                  <div className="flex items-center justify-between gap-2 text-neutral-300">
+                    <span>
+                      {isEn ? "Vehicle option" : "Fahrzeug-Option"}
+                    </span>
+                    <span className="font-medium tabular-nums text-white">
+                      +{breakdown.surcharge.toFixed(2)} €
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="mt-4 flex items-baseline justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-white">
+                    {isEn ? "Fixed Total" : "Festpreis gesamt"}
+                  </div>
+                  <div className="text-xs text-neutral-400">
+                    {t("index.wizard-mwst")}
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold tabular-nums text-white">
+                  {breakdown.total} €
+                </div>
+              </div>
+
+              <div id="wiz-field-privacy" className="mt-5 scroll-mt-28">
+                <PrivacyConsentCard
+                  checked={datenErklaerung}
+                  onChange={(val) => {
+                    markTouched("privacy");
+                    setDatenErklaerung(val);
+                  }}
+                  hasError={Boolean(getVisibleError("privacy"))}
+                  errorMessage={getVisibleError("privacy")}
+                  isEn={isEn}
+                />
+              </div>
+
+              {currentMissing.length > 0 ? (
+                <div className="mt-4">
+                  <MissingChecklistBanner
+                    missing={currentMissing}
+                    attempted={isStepAttempted}
+                    isEn={isEn}
+                  />
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={handleSubmitClick}
+                className="mt-5 inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#0071E3] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0077ED] active:scale-[0.98]"
+              >
+                <span>
+                  {transportInformation.art === "Anfrage" ||
+                  transportInformation.art === "Request"
+                    ? isEn
+                      ? "Send Inquiry"
+                      : "Anfrage absenden"
+                    : t("index.wizard-abschicken")}
+                </span>
+                <BsChevronRight />
               </button>
-            </div>
+            </aside>
           </div>
-        ) : (
-          <div className="text-center text-4xl">
-            {transportInformation.art}{" "}
-            {i18n.language === "en" ? "sent." : "abgeschickt."}
+        </div>
+      ) : (
+        <div className="space-y-3 py-8 text-center">
+          <div className="text-3xl font-bold text-white sm:text-4xl">
+            {transportInformation.art} {isEn ? "sent." : "abgeschickt."}
           </div>
-        )}
+        </div>
+      )}
 
-        <Toast
-          isOpen={isToastOpen}
-          setIsOpen={setIsToastOpen}
-          severity="success"
-          title={`${transportInformation.art === "Anfrage" ||
-            transportInformation.art === "Request"
+      <Toast
+        isOpen={isToastOpen}
+        setIsOpen={setIsToastOpen}
+        severity="success"
+        title={`${
+          transportInformation.art === "Anfrage" ||
+          transportInformation.art === "Request"
             ? t("index.anfrage")
             : t("index.bestellung")
-            } ${t("index.toast-success")}`}
-          text={`${transportInformation.art === "Anfrage" ||
-            transportInformation.art === "Request"
+        } ${t("index.toast-success")}`}
+        text={`${
+          transportInformation.art === "Anfrage" ||
+          transportInformation.art === "Request"
             ? t("index.anfrage")
             : t("index.bestellung")
-            } ${t("index.toast-success-text")}`}
-        />
-      </>
-    );
-
-  return null;
-};
-
-export default BahnhofTransfer;
+        } ${t("index.toast-success-text")}`}
+      />
+    </>
+  );
+}

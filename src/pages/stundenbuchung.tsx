@@ -10,7 +10,6 @@ import {
   IoBriefcaseOutline,
   IoBusinessOutline,
   IoCalendarOutline,
-  IoCallOutline,
   IoCarSportOutline,
   IoCheckmark,
   IoCheckmarkCircle,
@@ -19,7 +18,6 @@ import {
   IoCompassOutline,
   IoFilmOutline,
   IoHeartOutline,
-  IoLogoWhatsapp,
   IoShieldCheckmarkOutline,
   IoTimeOutline,
 } from "react-icons/io5";
@@ -28,9 +26,12 @@ import Navbar from "@/components/navbar";
 import BuchenSection from "@/components/sections/buchen-section";
 import Footer from "@/components/footer/footer";
 import PhoneButton from "@/components/phone-button";
-import { WhatsAppBanner } from "@/components/whatsapp-banner";
+import {
+  PhoneCtaPill,
+  WhatsAppBanner,
+  WhatsAppCtaPill,
+} from "@/components/whatsapp-banner";
 import SeoHead, { SITE_URL } from "@/components/seo/seo-head";
-import { trackContactConversion } from "@/lib/analytics";
 import type {
   HourlyClassId,
   HourlyProvision,
@@ -53,7 +54,7 @@ const CLASS_CARDS: readonly ClassCardConfig[] = [
   {
     id: "Business Class",
     rate: 69,
-    image: "/img/stunden-e-klasse.jpg",
+    image: "/img/stunden-e-klasse-w213-amg.jpg",
     popular: true,
     nameDe: "Business Class",
     nameEn: "Business Class",
@@ -96,19 +97,19 @@ const CLASS_CARDS: readonly ClassCardConfig[] = [
   {
     id: "First Class Van",
     rate: 79,
-    image: "/img/stunden-v-klasse.jpg",
+    image: "/img/stunden-v-klasse-amg.jpg",
     nameDe: "First Class Van",
     nameEn: "First Class Van",
     vehicleDe: "Mercedes-Benz V-Klasse o. ä.",
     vehicleEn: "Mercedes-Benz V-Class or similar",
     specsDe: [
-      "Bis zu 7 Personen mit viel Beinfreiheit",
+      "Bis zu 6 Fahrgäste mit viel Beinfreiheit",
       "Großer Laderaum für Team- & Messegepäck",
       "Ideal für Delegationen & Roadshows",
       "25 km pro Stunde inklusive (50–300 km)",
     ],
     specsEn: [
-      "Up to 7 passengers with generous legroom",
+      "Up to 6 passengers with generous legroom",
       "Large luggage bay for team & trade fair gear",
       "Ideal for executive teams & roadshows",
       "25 km per hour included (50–300 km)",
@@ -245,12 +246,6 @@ export default function StundenbuchungPage() {
   const bookAnchor = t("nav-buchen") || (isEn ? "Book" : "Buchen");
   const localePrefix = isEn ? "/en" : "";
   const fullUrl = `${SITE_URL}${localePrefix}/stundenbuchung`;
-
-  const whatsappContextUrl = `https://api.whatsapp.com/send/?phone=%2B491607113183&text=${encodeURIComponent(
-    isEn
-      ? "Hello, I would like to inquire about an Hourly Chauffeur Booking with myairporttransfer24."
-      : "Hallo, ich möchte gerne eine Stundenbuchung bei myairporttransfer24 anfragen."
-  )}&type=phone_number&app_absent=0`;
 
   const handleSelectClass = (
     classId: HourlyClassId,
@@ -462,37 +457,12 @@ export default function StundenbuchungPage() {
                     <IoArrowForward className="h-4 w-4" aria-hidden="true" />
                   </a>
 
-                  <a
-                    href="tel:+496172923232"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      trackContactConversion("phone", "tel:+496172923232");
-                    }}
-                    className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]"
-                  >
-                    <IoCallOutline className="h-4 w-4" aria-hidden="true" />
-                    <span className="tabular-nums">+49 6172 / 92 32 32</span>
-                  </a>
-
-                  <a
-                    href={whatsappContextUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() =>
-                      trackContactConversion(
-                        "whatsapp",
-                        whatsappContextUrl,
-                        true
-                      )
+                  <PhoneCtaPill />
+                  <WhatsAppCtaPill
+                    contextHint={
+                      isEn ? "Hourly Chauffeur Booking" : "Stundenbuchung (Chauffeur)"
                     }
-                    className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-[#25D366]/45 bg-[#25D366]/15 px-4 py-3 text-sm font-medium text-white transition hover:border-[#25D366]/80 hover:bg-[#25D366]/25"
-                  >
-                    <IoLogoWhatsapp
-                      className="h-4 w-4 text-[#25D366]"
-                      aria-hidden="true"
-                    />
-                    <span>WhatsApp</span>
-                  </a>
+                  />
                 </div>
               </div>
 
@@ -884,23 +854,20 @@ export default function StundenbuchungPage() {
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <a
                   href={`#${bookAnchor}`}
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]"
                 >
                   <span>{isEn ? "Book Online Now" : "Jetzt buchen"}</span>
                   <IoArrowForward className="h-4 w-4" aria-hidden="true" />
                 </a>
 
-                <a
-                  href="tel:+496172923232"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    trackContactConversion("phone", "tel:+496172923232");
-                  }}
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]"
-                >
-                  <IoCallOutline className="h-4 w-4" aria-hidden="true" />
-                  <span className="tabular-nums">+49 6172 / 92 32 32</span>
-                </a>
+                <PhoneCtaPill />
+                <WhatsAppCtaPill
+                  contextHint={
+                    isEn
+                      ? "Hourly Chauffeur (Driver Only)"
+                      : "Stundenbuchung (Nur Fahrer)"
+                  }
+                />
               </div>
             </div>
           </div>

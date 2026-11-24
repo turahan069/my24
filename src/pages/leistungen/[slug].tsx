@@ -7,7 +7,6 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import {
   IoArrowForward,
-  IoCallOutline,
   IoCarSportOutline,
   IoCheckmarkCircle,
   IoChevronDown,
@@ -21,15 +20,19 @@ import Navbar from "@/components/navbar";
 import BuchenSection from "@/components/sections/buchen-section";
 import Footer from "@/components/footer/footer";
 import PhoneButton from "@/components/phone-button";
-import { WhatsAppBanner } from "@/components/whatsapp-banner";
+import {
+  PhoneCtaPill,
+  WhatsAppBanner,
+  WhatsAppCtaPill,
+} from "@/components/whatsapp-banner";
 import SeoHead, { SITE_URL } from "@/components/seo/seo-head";
+import { CITIES } from "@/data/cities";
 import {
   SERVICES,
   SERVICE_SLUGS,
   getServiceBySlug,
   type ServiceEntry,
 } from "@/data/services";
-import { trackContactConversion } from "@/lib/analytics";
 
 type ServiceCardSummary = Pick<
   ServiceEntry,
@@ -191,7 +194,7 @@ export default function ServiceDetailPage({
 
                 <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
                   {h1}
-                </h1>x^
+                </h1>
 
                 <p className="mt-3 text-base font-medium text-[#5AC8FA] sm:text-lg">
                   {subtitle}
@@ -201,39 +204,33 @@ export default function ServiceDetailPage({
                   {intro}
                 </p>
 
-                <div className="mt-6 flex flex-wrap gap-3">
+                <div className="mt-6 flex flex-wrap items-center gap-3">
                   <a
                     href={`#${bookAnchor}`}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#0071E3] px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]">
+                    className="inline-flex min-h-[46px] items-center gap-2 rounded-full bg-[#0071E3] px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]">
                     <span>{isEn ? "Book or Request Now" : "Jetzt anfragen / buchen"}</span>
                     <IoArrowForward className="h-4 w-4" />
                   </a>
+                  <PhoneCtaPill />
+                  <WhatsAppCtaPill contextHint={isEn ? service.nameEn : service.nameDe} />
                   {service.slug === "chauffeurservice" ? (
                     <Link
                       href="/stundenbuchung"
-                      className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
+                      className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
                       <IoTimeOutline className="h-4 w-4 text-[#5AC8FA]" />
                       <span>
                         {isEn ? "Hourly Booking Page" : "Eigene Stundenbuchung-Seite"}
                       </span>
                     </Link>
                   ) : null}
-                  <a
-                    href="tel:+496172923232"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      trackContactConversion("phone", "tel:+496172923232");
-                    }}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
-                    <IoCallOutline className="h-4 w-4 text-neutral-200" />
-                    <span className="tabular-nums">+49 6172 / 92 32 32</span>
-                  </a>
                   <Link
                     href="/flughafentransfer"
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/15 bg-transparent px-4 py-3 text-sm font-medium text-neutral-300 transition hover:border-white/30 hover:text-white">
+                    className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/15 bg-transparent px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:border-white/30 hover:text-white">
                     <IoMapOutline className="h-4 w-4" />
                     <span>
-                      {isEn ? "17 City Fixed Fares" : "17 Festpreis-Gebiete"}
+                      {isEn
+                        ? `${CITIES.length} City Fixed Fares`
+                        : `${CITIES.length} Festpreis-Gebiete`}
                     </span>
                   </Link>
                 </div>

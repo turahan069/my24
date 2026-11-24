@@ -1,7 +1,10 @@
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { IoChevronDown } from "react-icons/io5";
 import Footer from "@/components/footer/footer";
 import Navbar from "@/components/navbar";
+import AboutSection from "@/components/sections/about-section";
 import BuchenSection from "@/components/sections/buchen-section";
 import FuhrparkSection from "@/components/sections/fuhrpark-section";
 import HomeSection from "@/components/sections/home-section";
@@ -19,22 +22,32 @@ const REGION_GROUPS: {
   titleDe: string;
   titleEn: string;
 }[] = [
-  { id: "hochtaunus", titleDe: "Hochtaunuskreis", titleEn: "Hochtaunus District" },
-  { id: "wetterau", titleDe: "Wetteraukreis", titleEn: "Wetterau District" },
-  { id: "frankfurt_nord", titleDe: "Frankfurt am Main (Nord)", titleEn: "Northern Frankfurt" },
-];
+    { id: "hochtaunus", titleDe: "Hochtaunuskreis", titleEn: "Hochtaunus District" },
+    { id: "wetterau", titleDe: "Wetteraukreis", titleEn: "Wetterau District" },
+    { id: "frankfurt_nord", titleDe: "Frankfurt (Nord) & Main-Taunus", titleEn: "Northern Frankfurt & Main-Taunus" },
+  ];
 
 export default function Home() {
   const router = useRouter();
   const isEn = router.locale === "en";
+  // Auf Smartphones (< md) startet zunächst Hochtaunuskreis geöffnet, die übrigen Regionen per Tap ausklappbar
+  const [openRegions, setOpenRegions] = useState<Record<CityAreaCategory, boolean>>({
+    hochtaunus: true,
+    wetterau: false,
+    frankfurt_nord: false,
+  });
+
+  const toggleRegion = (id: CityAreaCategory) => {
+    setOpenRegions((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const seoTitle = isEn
-    ? "Frankfurt Airport Transfer, Taxi & Shuttle | Fixed Fares from €50"
-    : "Flughafentransfer Frankfurt, Taxi & Shuttle | Ab 50 € Festpreis";
+    ? "Frankfurt Airport Transfer & Limousine Service | Fixed Fares from €50"
+    : "Flughafentransfer Frankfurt & Limousinenservice | Ab 50 € Festpreis";
 
   const seoDescription = isEn
-    ? "24/7 Frankfurt Airport Transfer (FRA), Taxi & private Airport Shuttle from €50 fixed fare in Bad Homburg, Friedrichsdorf, Oberursel, Usingen, Karben & North Frankfurt."
-    : "24/7 Flughafentransfer Frankfurt (FRA), Taxi & privates Airport-Shuttle ab 50 € Festpreis – direkt ab Bad Homburg, Friedrichsdorf, Oberursel, Usingen, Karben & Frankfurt-Nord.";
+    ? "24/7 private limousine & driving service across Hochtaunus, Wetterau & North Frankfurt: Frankfurt Airport (FRA) fixed fares from €50—discreet alternative to airport taxi or shuttle."
+    : "Ihr Limousinenservice & Fahrdienst im Hochtaunus, der Wetterau & Frankfurt: Kerngeschäft Flughafentransfer (FRA) ab 50 € Festpreis – pünktlich statt klassischem Flughafen-Taxi & Shuttle.";
 
   const allCityNames = CITIES.map((c) => c.shortName).join(", ");
 
@@ -93,63 +106,93 @@ export default function Home() {
         <Navbar />
         <div className="pt-16 lg:pt-[76px]" />
         <HomeSection />
-        <WhatsAppBanner theme="dark" />
         <BuchenSection />
+        <LeistungenSection />
         <PreiseSection />
 
-        {/* Regional Airport Transfer, Taxi & Shuttle Directory (17 Cities) */}
-        <section className="w-full border-b border-white/10 bg-[#0B0D12] px-4 py-14 text-white sm:px-6 lg:px-8 lg:py-20">
+        {/* Regional Airport Transfer Directory (17 Cities) */}
+        <section className="w-full border-b border-white/10 bg-[#10131B] px-4 py-14 text-white sm:px-6 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div className="max-w-3xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5AC8FA]">
                   {isEn
-                    ? "REGIONAL AIRPORT TRANSFER · TAXI · SHUTTLE"
-                    : "FLUGHAFENTRANSFER · TAXI · SHUTTLE VOR ORT"}
+                    ? "SERVICE AREAS · DOOR-TO-DOOR FIXED FARES"
+                    : "EINSATZGEBIETE · FESTPREIS AB HAUSTÜR"}
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                   {isEn
-                    ? `Direct Airport Transfer & Shuttle across ${CITIES.length} Towns`
-                    : `Flughafentransfer, Taxi & Shuttle für alle ${CITIES.length} Einsatzgebiete`}
+                    ? `Frankfurt Airport Transfers across ${CITIES.length} Towns`
+                    : `Flughafentransfer für alle ${CITIES.length} Einsatzgebiete`}
                 </h2>
                 <p className="mt-2.5 text-sm leading-relaxed text-neutral-300 sm:text-base">
                   {isEn
-                    ? `Whether booking an airport taxi, fixed-fare chauffeur, or private Frankfurt Airport shuttle—we pick you up directly in ${allCityNames} and drive nonstop to FRA Terminal 1 & 3.`
-                    : `Ob privates Flughafen-Taxi, direkter Flughafentransfer oder komfortabler Airport-Shuttle: Wir holen Sie pünktlich in ${allCityNames} direkt an der Haustür ab und bringen Sie zum Festpreis an Terminal 1 & 3 in Frankfurt (FRA).`}
+                    ? `Specializing in punctual rides to Frankfurt Airport (Terminal 1 & 3): Our private limousine & driving service picks you up right at your doorstep in ${allCityNames}—with guaranteed fixed fares instead of metered airport taxis or shared shuttles.`
+                    : `Spezialisiert auf pünktliche Fahrten zum Flughafen Frankfurt (Terminal 1 & 3): Unser Limousinen- und Fahrdienst holt Sie in ${allCityNames} direkt an der Haustür ab – zum garantierten Festpreis statt klassischem Flughafen-Taxi oder Sammel-Shuttle.`}
                 </p>
               </div>
               <Link
                 href="/flughafentransfer"
                 className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#0071E3] px-5 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98] sm:text-sm"
               >
-                {isEn ? "All 17 Service Areas →" : "Alle Einsatzgebiete →"}
+                {isEn
+                  ? `All ${CITIES.length} Service Areas →`
+                  : "Alle Einsatzgebiete →"}
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 grid gap-4 md:grid-cols-3 md:gap-6">
               {REGION_GROUPS.map((group) => {
                 const regionCities = CITIES.filter(
                   (c) => c.category === group.id
                 );
+                const isRegionOpenMobile = openRegions[group.id];
                 return (
                   <div
                     key={group.id}
-                    className="flex flex-col rounded-2xl border border-white/10 bg-[#151924] p-5"
+                    className="flex flex-col rounded-2xl border border-white/10 bg-[#151924] p-4 sm:p-5"
                   >
-                    <h3 className="border-b border-white/10 pb-3 text-sm font-bold uppercase tracking-wider text-[#5AC8FA]">
+                    {/* Desktop: statische Überschrift · Smartphone: aufklappbarer Akkordeon-Kopf */}
+                    <h3 className="hidden border-b border-white/10 pb-3 text-sm font-bold uppercase tracking-wider text-[#5AC8FA] md:block">
                       {isEn ? group.titleEn : group.titleDe}
                     </h3>
-                    <ul className="mt-3 divide-y divide-white/5">
+                    <button
+                      type="button"
+                      aria-expanded={isRegionOpenMobile}
+                      onClick={() => toggleRegion(group.id)}
+                      className="flex min-h-[44px] w-full items-center justify-between gap-2 text-left md:hidden"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-sm font-bold uppercase tracking-wider text-[#5AC8FA]">
+                          {isEn ? group.titleEn : group.titleDe}
+                        </span>
+                        <span className="rounded-full bg-white/[0.07] px-2 py-0.5 text-xs font-medium text-neutral-300">
+                          {regionCities.length} {isEn ? "towns" : "Orte"}
+                        </span>
+                      </span>
+                      <IoChevronDown
+                        className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${
+                          isRegionOpenMobile ? "rotate-180" : ""
+                        }`}
+                        aria-hidden="true"
+                      />
+                    </button>
+
+                    <ul
+                      className={`${
+                        isRegionOpenMobile ? "mt-2 block border-t border-white/10 pt-1" : "hidden"
+                      } divide-y divide-white/5 md:mt-3 md:block md:border-t-0 md:pt-0`}
+                    >
                       {regionCities.map((city) => (
                         <li key={city.slug}>
                           <Link
                             href={`/flughafentransfer/${city.slug}`}
-                            className="group flex items-center justify-between gap-2 py-2 text-sm transition hover:text-[#5AC8FA]"
+                            className="group flex min-h-[44px] items-center justify-between gap-2 py-2.5 text-sm transition hover:text-[#5AC8FA] md:min-h-0 md:py-2"
                           >
                             <span className="text-neutral-200 transition group-hover:text-white">
                               {isEn
-                                ? `Airport Transfer & Taxi ${city.shortName}`
-                                : `Flughafentransfer & Taxi ${city.shortName}`}
+                                ? `Airport Transfer ${city.shortName}`
+                                : `Flughafentransfer ${city.shortName}`}
                             </span>
                             <span className="shrink-0 font-semibold tabular-nums text-[#5AC8FA]">
                               {city.prices.flughafen} €
@@ -165,8 +208,9 @@ export default function Home() {
           </div>
         </section>
 
-        <LeistungenSection />
         <FuhrparkSection />
+        <AboutSection />
+        <WhatsAppBanner theme="dark" />
         <Footer />
         <PhoneButton />
       </main>

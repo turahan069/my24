@@ -8,7 +8,6 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import {
   IoAirplaneOutline,
   IoArrowForward,
-  IoCallOutline,
   IoCheckmarkCircleOutline,
   IoLocationOutline,
   IoMapOutline,
@@ -19,14 +18,18 @@ import {
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer/footer";
 import PhoneButton from "@/components/phone-button";
-import { WhatsAppBanner } from "@/components/whatsapp-banner";
+import { MissingRouteCallout } from "@/components/missing-route-callout";
+import {
+  PhoneCtaPill,
+  WhatsAppBanner,
+  WhatsAppCtaPill,
+} from "@/components/whatsapp-banner";
 import SeoHead, { SITE_URL } from "@/components/seo/seo-head";
 import {
   CITIES,
   type CityAreaCategory,
   type EnrichedCityEntry,
 } from "@/data/cities";
-import { trackContactConversion } from "@/lib/analytics";
 
 type HubCitySummary = Pick<
   EnrichedCityEntry,
@@ -57,10 +60,10 @@ const CATEGORY_LABELS: Record<
   "all" | CityAreaCategory,
   { de: string; en: string }
 > = {
-  all: { de: "Alle Gebiete (17)", en: "All Areas (17)" },
+  all: { de: "Alle Gebiete", en: "All Areas" },
   hochtaunus: { de: "Hochtaunuskreis", en: "Hochtaunus District" },
   wetterau: { de: "Wetteraukreis", en: "Wetterau District" },
-  frankfurt_nord: { de: "Frankfurt-Nord", en: "Northern Frankfurt" },
+  frankfurt_nord: { de: "Frankfurt-Nord & MTK", en: "North FFM & MTK" },
 };
 
 export default function FlughafentransferHubPage({ cities }: HubPageProps) {
@@ -158,7 +161,7 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
         "@type": "OfferCatalog",
         name: isEn
           ? "Fixed-Fare Airport Transfer, Taxi & Shuttle Services"
-          : "Festpreis Flughafentransfer, Taxi & Shuttle für 17 Einsatzgebiete",
+          : `Festpreis Flughafentransfer, Taxi & Shuttle für ${cities.length} Einsatzgebiete`,
         itemListElement: cities.map((c) => ({
           "@type": "Offer",
           name: isEn
@@ -204,24 +207,24 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
               <IoMapOutline className="h-4 w-4" />
               <span>
                 {isEn
-                  ? "17 Fixed-Fare Service Areas · Airport Transfer, Taxi & Shuttle"
-                  : "17 Festpreis-Gebiete · Flughafentransfer, Taxi & Shuttle"}
+                  ? `${cities.length} Fixed-Fare Service Areas · Limousine & Airport Transfer`
+                  : `${cities.length} Festpreis-Gebiete · Limousinenservice & Flughafentransfer`}
               </span>
             </div>
 
             <h1 className="mt-4 max-w-4xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
               {isEn ? (
                 <>
-                  Frankfurt Airport Transfer, Taxi & Shuttle{" "}
+                  Frankfurt Airport Transfer{" "}
                   <span className="text-[#5AC8FA]">
-                    for 17 Cities & Districts
+                    {`for ${cities.length} Cities & Districts`}
                   </span>
                 </>
               ) : (
                 <>
-                  Flughafentransfer, Taxi & Shuttle{" "}
+                  Flughafentransfer Frankfurt{" "}
                   <span className="text-[#5AC8FA]">
-                    für alle 17 Städte & Stadtteile
+                    {`für alle ${cities.length} Städte & Stadtteile`}
                   </span>
                 </>
               )}
@@ -229,8 +232,8 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
 
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-neutral-300 sm:text-lg">
               {isEn
-                ? `Private door-to-door airport transfer, taxi alternative and airport shuttle to Frankfurt Airport (FRA Terminal 1 & 3), Central Station and South Station—24/7 fixed fares from €${minFare} incl. VAT with live flight tracking.`
-                : `Ihr privater Tür-zu-Tür-Flughafentransfer, Taxi-Service und Airport-Shuttle zum Flughafen Frankfurt (FRA Terminal 1 & 3), Hauptbahnhof und Südbahnhof – 24/7 zum garantierten Festpreis ab ${minFare} € inkl. MwSt.`}
+                ? `Your private driving & limousine service to Frankfurt Airport (FRA Terminal 1 & 3), Central Station and South Station—24/7 fixed fares from €${minFare} incl. VAT as a comfortable alternative to an airport taxi or shuttle.`
+                : `Ihr privater Fahrdienst und Limousinenservice zum Flughafen Frankfurt (FRA Terminal 1 & 3), Hauptbahnhof und Südbahnhof – 24/7 zum garantierten Festpreis ab ${minFare} € inkl. MwSt. als komfortable Alternative zum Flughafen-Taxi und Shuttle.`}
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -241,16 +244,8 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
                 <span>{isEn ? "Book Transfer Online" : "Jetzt online buchen"}</span>
                 <IoArrowForward className="h-4 w-4" />
               </Link>
-              <a
-                href="tel:+496172923232"
-                onClick={(e) => {
-                  e.preventDefault();
-                  trackContactConversion("phone", "tel:+496172923232");
-                }}
-                className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
-                <IoCallOutline className="h-4 w-4 text-neutral-200" />
-                <span className="tabular-nums">+49 6172 / 92 32 32</span>
-              </a>
+              <PhoneCtaPill />
+              <WhatsAppCtaPill />
             </div>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -299,7 +294,13 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
                       ? "bg-[#0071E3] text-white shadow-sm"
                       : "border border-white/10 bg-[#10131B] text-neutral-300 hover:border-white/25 hover:text-white"
                       }`}>
-                    {isEn ? CATEGORY_LABELS[cat].en : CATEGORY_LABELS[cat].de}
+                    {cat === "all"
+                      ? isEn
+                        ? `All Areas (${cities.length})`
+                        : `Alle Gebiete (${cities.length})`
+                      : isEn
+                        ? CATEGORY_LABELS[cat].en
+                        : CATEGORY_LABELS[cat].de}
                   </button>
                 );
               })}
@@ -319,7 +320,7 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
                     ? "Search town or ZIP (e.g. 61350)..."
                     : "Ort oder PLZ filtern (z. B. 61381)..."
                 }
-                className="w-full rounded-xl border border-white/15 bg-[#10131B] px-3.5 py-2 text-sm text-white placeholder:text-neutral-400 focus:border-[#0071E3] focus:outline-none"
+                className="min-h-[44px] w-full rounded-xl border border-white/15 bg-[#10131B] px-3.5 py-2 text-base text-white placeholder:text-neutral-400 focus:border-[#0071E3] focus:outline-none sm:text-sm"
               />
             </div>
           </div>
@@ -330,10 +331,15 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
         {/* City Cards Grid */}
         <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           {filteredCities.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-[#151924] p-10 text-center text-neutral-300">
-              {isEn
-                ? "No locations matched your filter."
-                : "Kein Ort passend zu Ihrem Filter gefunden."}
+            <div className="rounded-2xl border border-white/10 bg-[#151924]">
+              <MissingRouteCallout
+                variant="empty-search"
+                searchQuery={query}
+                onResetSearch={() => {
+                  setQuery("");
+                  setSelectedCategory("all");
+                }}
+              />
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -425,8 +431,8 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
                         className="inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-full bg-[#0071E3] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]">
                         <span>
                           {isEn
-                            ? `Airport Transfer & Taxi ${city.shortName}`
-                            : `Flughafentransfer & Taxi ${city.shortName}`}
+                            ? `Airport Transfer ${city.shortName}`
+                            : `Flughafentransfer ${city.shortName}`}
                         </span>
                         <IoArrowForward className="h-4 w-4 shrink-0" />
                       </Link>
@@ -444,8 +450,8 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
             <div className="border-b border-white/10 bg-[#10131B] px-6 py-4">
               <h2 className="text-lg font-bold text-white">
                 {isEn
-                  ? "Fixed Price Overview – All 17 Pick-up Locations (incl. VAT)"
-                  : "Festpreis-Übersicht – Alle 17 Abholorte inkl. MwSt."}
+                  ? `Fixed Price Overview – All ${cities.length} Pick-up Locations (incl. VAT)`
+                  : `Festpreis-Übersicht – Alle ${cities.length} Abholorte inkl. MwSt.`}
               </h2>
             </div>
             <div className="overflow-x-auto">
@@ -512,18 +518,22 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
           </div>
         </section>
 
-        {/* Regional SEO Directory: Flughafentransfer, Taxi & Shuttle per City */}
+        <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:px-8">
+          <MissingRouteCallout variant="banner" />
+        </section>
+
+        {/* Regional SEO Directory: Direct Airport Connections per City */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-white/10 bg-[#10131B] p-6 sm:p-8">
             <h2 className="text-lg font-bold text-white sm:text-xl">
               {isEn
-                ? "Airport Transfer, Taxi & Shuttle – Direct Connections in Our Region"
-                : "Flughafentransfer, Taxi & Shuttle – Direktverbindungen in Ihrer Nähe"}
+                ? "Direct Connections from Your Doorstep"
+                : "Direktverbindungen ab Ihrer Haustür"}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-neutral-300">
               {isEn
-                ? "Looking for a fixed-price airport taxi or private Frankfurt Airport shuttle from your town? Choose your location for route times, postal codes and direct booking:"
-                : "Ob zuverlässiger Flughafentransfer, komfortables Flughafen-Taxi ohne Taxameter oder privater Shuttle-Service zu Terminal 1 & 3 in Frankfurt (FRA) – wir holen Sie direkt an Ihrer Haustür ab:"}
+                ? "Whether looking for a fixed-fare airport transfer, discreet airport taxi alternative, or private Frankfurt Airport shuttle to Terminal 1 & 3—select your town for route times, postal codes and online booking:"
+                : "Ob direkter Flughafentransfer, bequeme Flughafen-Taxi-Alternative ohne Taxameter oder privater Shuttle-Service zu Terminal 1 & 3 in Frankfurt (FRA) – wir holen Sie direkt an Ihrer Haustür ab:"}
             </p>
             <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {cities.map((city) => (
@@ -533,8 +543,8 @@ export default function FlughafentransferHubPage({ cities }: HubPageProps) {
                   className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#151924] px-3.5 py-2.5 text-xs font-medium text-neutral-200 transition hover:border-white/25 hover:text-[#5AC8FA]">
                   <span>
                     {isEn
-                      ? `Airport Transfer, Taxi & Shuttle ${city.shortName}`
-                      : `Flughafentransfer, Taxi & Shuttle ${city.shortName}`}
+                      ? `Airport Transfer ${city.shortName}`
+                      : `Flughafentransfer ${city.shortName}`}
                   </span>
                   <span className="shrink-0 font-semibold text-[#5AC8FA]">
                     {city.prices.flughafen} €

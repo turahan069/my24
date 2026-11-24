@@ -1,26 +1,26 @@
 import NavbarItem from "./navbar-item";
+import { goHomeOrScrollTop } from "./index";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
+import { hasInlineBookingSection } from "@/lib/navigation";
 
 const Navigator = ({ onNavigate }: { onNavigate?: () => void }) => {
   const { t } = useTranslation("common");
   const router = useRouter();
   const isHome = router.pathname === "/";
   const hasInlineBookSection =
-    router.pathname === "/flughafentransfer/[slug]" ||
-    router.pathname === "/leistungen/[slug]" ||
-    router.pathname === "/stundenbuchung";
+    router.pathname !== "/" && hasInlineBookingSection(router.pathname);
 
   const sectionHref = (id: string) => (isHome ? `#${id}` : `/#${id}`);
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center lg:gap-5 xl:gap-6">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center lg:gap-3.5 xl:gap-5">
       <NavbarItem
         title={t("nav-home")}
-        href={isHome ? `#${t("nav-home")}` : "/"}
-        isRoute={!isHome}
+        href="/"
+        isRoute={true}
         active={isHome}
-        onClick={onNavigate}
+        onClick={(e) => goHomeOrScrollTop(e, router, onNavigate)}
       />
       <NavbarItem
         title={t("nav-buchen")}
@@ -52,7 +52,9 @@ const Navigator = ({ onNavigate }: { onNavigate?: () => void }) => {
       />
       <NavbarItem
         title={t("nav-fuhrpark")}
-        href={sectionHref(t("nav-fuhrpark"))}
+        href={isHome ? `#${t("nav-fuhrpark")}` : "/fuhrpark"}
+        isRoute={!isHome}
+        active={router.pathname.startsWith("/fuhrpark")}
         onClick={onNavigate}
       />
       <NavbarItem
@@ -60,6 +62,13 @@ const Navigator = ({ onNavigate }: { onNavigate?: () => void }) => {
         href="/flughafentransfer"
         isRoute={true}
         active={router.pathname.startsWith("/flughafentransfer")}
+        onClick={onNavigate}
+      />
+      <NavbarItem
+        title={t("nav-about")}
+        href={isHome ? (router.locale === "en" ? "#about" : "#ueber-uns") : "/ueber-uns"}
+        isRoute={!isHome}
+        active={router.pathname === "/ueber-uns"}
         onClick={onNavigate}
       />
     </div>

@@ -13,7 +13,8 @@ const Footer = () => {
   const { t } = useTranslation();
   return (
     <div className="flex w-full flex-col items-center justify-center border-t border-white/10 bg-[#10131B] text-white">
-      <div className="font-regular flex flex-col gap-12 p-8">
+      {/* Unten extra Luft (pb-24) auf Handys, damit die fixe 1-Tap-Leiste nichts verdeckt */}
+      <div className="font-regular flex w-full max-w-7xl flex-col gap-12 px-6 pt-8 pb-24 sm:p-8 md:pb-8">
         <div className="grid max-w-7xl grid-cols-1 justify-items-start gap-8 md:grid-cols-2 lg:grid-cols-5 lg:justify-items-start">
           <div className="flex flex-col gap-4">
             <div className="font-bold">{t("index.nav-unternehmen-title")}</div>
@@ -78,16 +79,45 @@ const Footer = () => {
                 className="transition hover:text-white">
                 {t("index.tabelle-title-6")}
               </Link>
+              <Link
+                href={"/leistungen/krankenfahrten"}
+                className="transition hover:text-white">
+                {t("index.tabelle-title-7")}
+              </Link>
             </div>
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="font-bold">{t("index.nav-about-title")}</div>
-            <div className="flex flex-col gap-2">
-              <Link href={"/Impressum"}>{t("index.nav-about-us")}</Link>
-              <Link href={"/flughafentransfer"}>{t("nav-regions")}</Link>
-              <Link href={"/leistungen"}>{t("nav-leistungen")}</Link>
-              <div>{t("index.nav-about-rezensionen")}</div>
+            <Link
+              href="/ueber-uns"
+              className="font-bold transition hover:text-[#5AC8FA]"
+            >
+              {t("index.nav-about-title")}
+            </Link>
+            <div className="flex flex-col gap-2 text-sm text-neutral-300">
+              <Link href="/ueber-uns" className="transition hover:text-white">
+                {t("index.nav-about-us")}
+              </Link>
+              <Link
+                href="/flughafentransfer"
+                className="transition hover:text-white"
+              >
+                {t("nav-regions")}
+              </Link>
+              <Link href="/leistungen" className="transition hover:text-white">
+                {t("nav-leistungen")}
+              </Link>
+              <Link href="/fuhrpark" className="transition hover:text-white">
+                {t("nav-fuhrpark")}
+              </Link>
+              <a
+                href="https://g.page/MyAirportTransfer24?share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-white"
+              >
+                {t("index.nav-about-rezensionen")}
+              </a>
             </div>
           </div>
 
@@ -114,18 +144,18 @@ const Footer = () => {
 
         <Divider />
 
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-10 sm:gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
             <div className="text-2xl font-bold md:text-4xl">
               {t("index.payment")}
             </div>
-            <div className="flex flex-row items-center gap-8 text-[#98A2B3]">
-              <BsCashStack className="text-4xl md:text-5xl" />
+            <div className="flex flex-wrap items-center gap-5 text-[#98A2B3] sm:gap-8">
+              <BsCashStack className="text-3xl sm:text-4xl md:text-5xl" />
               <RiVisaLine className="text-4xl md:text-6xl" />
-              <SiAmericanexpress className="text-4xl md:text-5xl" />
-              <RiMastercardFill className="text-4xl md:text-5xl" />
-              <FaCcMastercard className="text-4xl md:text-5xl" />
-              <BsPaypal className="text-4xl md:text-5xl" />
+              <SiAmericanexpress className="text-3xl sm:text-4xl md:text-5xl" />
+              <RiMastercardFill className="text-3xl sm:text-4xl md:text-5xl" />
+              <FaCcMastercard className="text-3xl sm:text-4xl md:text-5xl" />
+              <BsPaypal className="text-3xl sm:text-4xl md:text-5xl" />
             </div>
           </div>
 
@@ -157,23 +187,23 @@ const Footer = () => {
 
         <div className="flex flex-col gap-4">
           <Divider />
-          <div className="flex flex-col items-center justify-between text-xs text-white/90 md:flex-row">
+          <div className="flex flex-col items-center justify-between gap-3 text-center text-xs text-white/90 md:flex-row md:text-left">
             <div className="justify-start">
               Copyright © 2026 MyAirportTransfer24 All rights reserved.
             </div>
-            <div className="flex flex-col items-center gap-4 md:flex-row">
-              <Link aria-label="AGB & Datenschutz" href="/AGB">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 md:flex-row">
+              <Link aria-label="AGB & Datenschutz" href="/AGB" className="py-1">
                 {t("index.agb")}
               </Link>
               <div className="hidden h-4 w-0.5 bg-white md:block" />
-              <Link aria-label="Impressum" href="/Impressum">
+              <Link aria-label="Impressum" href="/Impressum" className="py-1">
                 {t("index.impressum")}
               </Link>
               <div className="hidden h-4 w-0.5 bg-white md:block" />
               <button
                 type="button"
                 onClick={openCookieSettings}
-                className="cursor-pointer text-white/90 transition hover:text-blue-400">
+                className="cursor-pointer py-1 text-white/90 transition hover:text-blue-400">
                 {t("index.cookie")}
               </button>
             </div>

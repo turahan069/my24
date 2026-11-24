@@ -7,7 +7,6 @@ import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import {
   IoArrowForward,
-  IoCallOutline,
   IoCheckmarkCircleOutline,
   IoLayersOutline,
   IoMapOutline,
@@ -18,10 +17,14 @@ import {
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer/footer";
 import PhoneButton from "@/components/phone-button";
-import { WhatsAppBanner } from "@/components/whatsapp-banner";
+import {
+  PhoneCtaPill,
+  WhatsAppBanner,
+  WhatsAppCtaPill,
+} from "@/components/whatsapp-banner";
 import SeoHead, { SITE_URL } from "@/components/seo/seo-head";
+import { CITIES } from "@/data/cities";
 import { SERVICES, type ServiceEntry } from "@/data/services";
-import { trackContactConversion } from "@/lib/analytics";
 
 const IMG_POSITION_BY_SLUG: Record<string, string> = {
   flughafentransfer: "object-[50%_68%]",
@@ -30,6 +33,7 @@ const IMG_POSITION_BY_SLUG: Record<string, string> = {
   chauffeurservice: "object-[50%_66%]",
   expresskurier: "object-[50%_58%]",
   limousinenservice: "object-center",
+  krankenfahrten: "object-center",
 };
 
 type LeistungenHubProps = {
@@ -127,8 +131,8 @@ export default function LeistungenHubPage({ services }: LeistungenHubProps) {
               <IoLayersOutline className="h-4 w-4" />
               <span>
                 {isEn
-                  ? "Frankfurt Airport Focus · 6 Specialized Transfer Categories"
-                  : "Fokus Flughafentransfer · 6 Transfer- & Chauffeur-Kategorien"}
+                  ? `Frankfurt Airport Focus · ${services.length} Specialized Transfer Categories`
+                  : `Fokus Flughafentransfer · ${services.length} Transfer- & Chauffeur-Kategorien`}
               </span>
             </div>
 
@@ -212,26 +216,40 @@ export default function LeistungenHubPage({ services }: LeistungenHubProps) {
 
         <WhatsAppBanner variant="compact" />
 
-        {/* 6 Service Cards */}
+        {/* Service Cards */}
         <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => {
               const isPrimary = service.slug === "flughafentransfer";
+              const isWideMedical = service.slug === "krankenfahrten";
               return (
                 <Link
                   key={service.slug}
                   href={`/leistungen/${service.slug}`}
-                  className={`group flex flex-col overflow-hidden rounded-2xl border bg-[#151924] transition duration-200 hover:-translate-y-0.5 ${
+                  className={`group flex overflow-hidden rounded-2xl border bg-[#151924] transition duration-200 hover:-translate-y-0.5 ${
+                    isWideMedical
+                      ? "flex-col sm:col-span-2 sm:flex-row lg:col-span-3"
+                      : "flex-col"
+                  } ${
                     isPrimary
                       ? "border-[#0071E3]/50 ring-1 ring-[#0071E3]/25 hover:border-[#0071E3]"
                       : "border-white/10 hover:border-white/25"
                   }`}>
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[#0E1118]">
+                  <div
+                    className={`relative overflow-hidden bg-[#0E1118] ${
+                      isWideMedical
+                        ? "aspect-[4/3] shrink-0 sm:aspect-auto sm:w-72 lg:w-96"
+                        : "aspect-[4/3]"
+                    }`}>
                     <Image
                       src={service.image}
                       alt={isEn ? service.imageAltEn : service.imageAltDe}
                       fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      sizes={
+                        isWideMedical
+                          ? "(max-width: 640px) 100vw, 384px"
+                          : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      }
                       className={`object-cover ${
                         IMG_POSITION_BY_SLUG[service.slug] || "object-center"
                       } transition duration-300 group-hover:scale-[1.03]`}
@@ -278,28 +296,29 @@ export default function LeistungenHubPage({ services }: LeistungenHubProps) {
                 </h2>
                 <p className="mt-1.5 text-sm text-neutral-300">
                   {isEn
-                    ? "Check all 17 town profiles across Hochtaunus, Wetterau & Northern Frankfurt or call us 24/7."
-                    : "Sehen Sie unsere 17 regionalen Infoseiten inklusive Festpreisliste für Flughafentransfer, Taxi & Shuttle an."}
+                    ? `Check all ${CITIES.length} town profiles across Hochtaunus, Wetterau & Northern Frankfurt or call us 24/7.`
+                    : `Sehen Sie unsere ${CITIES.length} regionalen Infoseiten inklusive Festpreisliste für Flughafentransfer, Taxi & Shuttle an.`}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href={`/#${bookAnchor}`}
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-full bg-[#0071E3] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]">
+                  <span>{isEn ? "Book Online" : "Jetzt buchen"}</span>
+                  <IoArrowForward className="h-4 w-4" />
+                </Link>
+                <PhoneCtaPill />
+                <WhatsAppCtaPill />
                 <Link
                   href="/flughafentransfer"
-                  className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:border-white/35 hover:bg-white/[0.12]">
                   <IoMapOutline className="h-4 w-4" />
                   <span>
-                    {isEn ? "17 Service Areas" : "17 Einsatzgebiete ansehen"}
+                    {isEn
+                      ? `${CITIES.length} Service Areas`
+                      : `${CITIES.length} Einsatzgebiete ansehen`}
                   </span>
                 </Link>
-                <a
-                  href="tel:+496172923232"
-                  onClick={() =>
-                    trackContactConversion("phone", "tel:+496172923232")
-                  }
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#0071E3] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0077ED] active:scale-[0.98]">
-                  <IoCallOutline className="h-4 w-4" />
-                  <span className="tabular-nums">+49 6172 / 92 32 32</span>
-                </a>
               </div>
             </div>
           </div>

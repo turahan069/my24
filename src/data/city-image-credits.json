@@ -1,11 +1,11 @@
 {
   "bad-homburg": {
-    "commonsFile": "File:Bad Homburg Kurhaus Kurparkseite.JPG",
-    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Bad_Homburg_Kurhaus_Kurparkseite.JPG",
+    "commonsFile": "File:Bad-homburg-kurpark-kaiser-wilhelms-bad-003.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Bad-homburg-kurpark-kaiser-wilhelms-bad-003.jpg",
     "localPath": "/img/cities/bad-homburg.jpg",
-    "author": "Karsten11",
-    "license": "Public domain",
-    "licenseUrl": "",
+    "author": "Dontworry",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
     "downloaded": true
   },
   "friedrichsdorf": {
@@ -150,6 +150,78 @@
     "author": "GeorgDerReisende",
     "license": "CC BY-SA 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloaded": true
+  },
+  "kronberg-taunus": {
+    "commonsFile": "File:Friedrichshof Castle, Kronberg im Taunus (P1090559).jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Friedrichshof_Castle,_Kronberg_im_Taunus_(P1090559).jpg",
+    "localPath": "/img/cities/kronberg-taunus.jpg",
+    "author": "Matti Blume",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/deed.en",
+    "downloaded": true
+  },
+  "koenigstein-taunus": {
+    "commonsFile": "File:Burg Königstein im Taunus.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Burg_K%C3%B6nigstein_im_Taunus.jpg",
+    "localPath": "/img/cities/koenigstein-taunus.jpg",
+    "author": "C. M.",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloaded": true
+  },
+  "steinbach-taunus": {
+    "commonsFile": "File:Steinbach, Schultheißenamt.JPG",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Steinbach,_Schulthei%C3%9Fenamt.JPG",
+    "localPath": "/img/cities/steinbach-taunus.jpg",
+    "author": "Karsten11",
+    "license": "Public domain",
+    "licenseUrl": "",
+    "downloaded": true
+  },
+  "schmitten-taunus": {
+    "commonsFile": "File:Schmitten (Hochtaunus) 02.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Schmitten_(Hochtaunus)_02.jpg",
+    "localPath": "/img/cities/schmitten-taunus.jpg",
+    "author": "Geoprofi Lars",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloaded": true
+  },
+  "bad-vilbel": {
+    "commonsFile": "File:Bad Vilbel Wasserburg 1.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Bad_Vilbel_Wasserburg_1.jpg",
+    "localPath": "/img/cities/bad-vilbel.jpg",
+    "author": "Massemer",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "downloaded": true
+  },
+  "friedberg-hessen": {
+    "commonsFile": "File:Burg Friedberg Nordtor und Adolfsturm.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Burg_Friedberg_Nordtor_und_Adolfsturm.jpg",
+    "localPath": "/img/cities/friedberg-hessen.jpg",
+    "author": "Haselburg-müller",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "downloaded": true
+  },
+  "bad-nauheim": {
+    "commonsFile": "File:Sprudelhof Bad Nauheim, Hessen, Germany.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Sprudelhof_Bad_Nauheim,_Hessen,_Germany.jpg",
+    "localPath": "/img/cities/bad-nauheim.jpg",
+    "author": "Frank Witthaus (ezeew)",
+    "license": "CC BY-SA 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+    "downloaded": true
+  },
+  "eschborn": {
+    "commonsFile": "File:Eschborn - Stadthalle und Rathaus.jpg",
+    "commonsUrl": "https://commons.wikimedia.org/wiki/File:Eschborn_-_Stadthalle_und_Rathaus.jpg",
+    "localPath": "/img/cities/eschborn.jpg",
+    "author": "Johann H. Addicks at de.wikipedia",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
     "downloaded": true
   }
 }

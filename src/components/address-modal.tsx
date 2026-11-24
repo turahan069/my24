@@ -95,7 +95,7 @@ export function AddressModal({
                           window.setTimeout(() => houseNumberRef.current?.focus(), 20);
                         }
                       }}
-                      className={`w-full rounded-xl bg-[#111111] py-2.5 px-4 text-white ring-1 transition-all placeholder:text-neutral-500 focus:ring-2 ${
+                      className={`w-full rounded-xl bg-[#111111] py-2.5 px-4 text-base text-white ring-1 transition-all placeholder:text-neutral-500 focus:ring-2 ${
                         strasse.trim() === ""
                           ? "ring-yellow-500"
                           : "ring-[#257BCC]"
@@ -116,7 +116,7 @@ export function AddressModal({
                         onChange={(e) => onHausnummerChange(e.target.value)}
                         type="text"
                         id="modal-hausnummer"
-                        className={`rounded-xl bg-[#111111] py-2.5 px-4 text-white ring-1 transition-all focus:ring-2 ${
+                        className={`rounded-xl bg-[#111111] py-2.5 px-4 text-base text-white ring-1 transition-all focus:ring-2 ${
                           hausnummer.trim() === ""
                             ? "ring-yellow-500"
                             : "ring-[#257BCC]"
@@ -135,7 +135,7 @@ export function AddressModal({
                         disabled={true}
                         type="text"
                         id="modal-ort"
-                        className="rounded-xl bg-[#111111]/70 py-2.5 px-4 text-neutral-400 ring-1 ring-white/15"
+                        className="rounded-xl bg-[#111111]/70 py-2.5 px-4 text-base text-neutral-400 ring-1 ring-white/15"
                       />
                     </div>
                   </div>

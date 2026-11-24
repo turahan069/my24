@@ -1,5 +1,6 @@
 import { Moment } from "moment";
 
+/** Zugelassene Bediengebiete (müssen 1:1 mit `Preise` in `src/data.ts` und `src/data/cities.ts` übereinstimmen) */
 type AbholortType =
   | "Bad Homburg"
   | "Bonames (Frankfurt)"
@@ -17,13 +18,26 @@ type AbholortType =
   | "Usingen"
   | "Wehrheim"
   | "Pfaffenwiesbach (Wehrheim)"
-  | "Karben";
+  | "Karben"
+  | "Kronberg im Taunus"
+  | "Königstein im Taunus"
+  | "Steinbach (Taunus)"
+  | "Schmitten im Taunus"
+  | "Bad Vilbel"
+  | "Friedberg (Hessen)"
+  | "Bad Nauheim"
+  | "Eschborn";
 
 type ZielortType =
   | "Frankfurter Flughafen"
   | "Frankfurter Hauptbahnhof"
   | "Frankfurter Südbahnhof";
 
+/**
+ * Gesamte Fahrzeugauswahl:
+ * - Erste 3 Einträge: Festpreis-Streckentransfers (Flughafen / Bahnhof)
+ * - Letzte 4 Einträge: Chauffeur- & Stundenbuchungen
+ */
 type FahrzeugType =
   | "Business Limousine"
   | "Business Kombi"
